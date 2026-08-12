@@ -3,7 +3,7 @@
 use crate::crypto;
 use crate::error::AppError;
 use crate::pools;
-use crate::session::{self, redirect, require_auth};
+use crate::session::{self, redirect, require_auth, urlenc};
 use crate::state::{AppState, SessionCtx};
 use crate::templates;
 use axum::extract::{Extension, Form, Path, Query, State};
@@ -440,18 +440,4 @@ async fn delete(
     .await?;
     let msg = urlenc(&format!("Koneksi '{name}' dihapus"));
     Ok(redirect(format!("/session_{}/connections?msg={msg}", ctx.id)))
-}
-
-fn urlenc(s: &str) -> String {
-    let mut out = String::new();
-    for b in s.bytes() {
-        match b {
-            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
-                out.push(b as char)
-            }
-            b' ' => out.push('+'),
-            _ => out.push_str(&format!("%{b:02X}")),
-        }
-    }
-    out
 }

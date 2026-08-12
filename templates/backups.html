@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Backup — DBManage{% endblock %}
+{% block content %}
+<header class="topbar">
+  <div class="brand">&#9672; DBManage</div>
+  <nav class="topnav">
+    <a href="">Dashboard</a>
+    <a href="connections">Connections</a>
+    <a class="active" href="backups">Backups</a>
+  </nav>
+  <form method="post" action="logout">
+    <button type="submit" class="btn-ghost">Logout</button>
+  </form>
+</header>
+<main class="page">
+  {% if let Some(m) = flash_ok %}<div class="flash-ok">{{ m }}</div>{% endif %}
+  {% if let Some(e) = flash_err %}<div class="alert">{{ e }}</div>{% endif %}
+  <section class="card">
+    <div class="row-between">
+      <h2>Konfigurasi Backup</h2>
+      <a class="btn-primary btn-inline btn-link" href="backups/new">+ Tambah Backup</a>
+    </div>
+    {% if configs.is_empty() %}
+    <p class="muted">Belum ada konfigurasi backup. Jadwalkan autobackup database Anda ke S3 atau Google Drive.</p>
+    {% else %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Koneksi</th>
+          <th>Database</th>
+          <th>Provider</th>
+          <th>Jadwal</th>
+          <th>Retensi</th>
+          <th>Terakhir</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in configs %}
+        <tr>
+          <td><span class="dot {% if b.enabled %}ok{% else %}off{% endif %}" title="{% if b.enabled %}aktif{% else %}nonaktif{% endif %}"></span></td>
+          <td>{{ b.conn_name }}</td>
+          <td class="strong mono">{{ b.database_name }}</td>
+          <td><span class="badge">{{ b.provider }}</span></td>
+          <td class="muted small">{{ b.schedule }}</td>
+          <td class="muted">{{ b.retention_days }} hari</td>
+          <td class="small">
+            <span class="status status-{{ b.last_status }}">{{ b.last_status }}</span>
+            <div class="muted small">{{ b.last_time }}</div>
+          </td>
+          <td>
+            <div class="actions">
+              <form method="post" action="backups/{{ b.id }}/run">
+                <button type="submit" class="btn-mini">Jalankan</button>
+              </form>
+              <a class="btn-mini" href="backups/{{ b.id }}/edit">Edit</a>
+              <form method="post" action="backups/{{ b.id }}/delete" onsubmit="return confirm('Hapus konfigurasi backup ini?')">
+                <button type="submit" class="btn-mini danger">Hapus</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+  <section class="card">
+    <h2>Riwayat Backup (20 terakhir)</h2>
+    {% if history.is_empty() %}
+    <p class="muted">Belum ada backup yang dijalankan.</p>
+    {% else %}
+    <table class="table">
+      <thead>
+        <tr><th>File</th><th>Status</th><th>Provider</th><th>Ukuran</th><th>Waktu</th><th>Error</th></tr>
+      </thead>
+      <tbody>
+        {% for h in history %}
+        <tr>
+          <td class="mono small">{{ h.filename }}</td>
+          <td><span class="status status-{{ h.status }}">{{ h.status }}</span></td>
+          <td><span class="badge">{{ h.provider }}</span></td>
+          <td class="muted mono">{{ h.size }}</td>
+          <td class="muted small">{{ h.started }}</td>
+          <td class="muted small err-text">{{ h.error }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

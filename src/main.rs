@@ -1,9 +1,12 @@
 mod auth;
+mod backup;
 mod config;
 mod connections;
 mod crypto;
 mod db;
 mod error;
+mod explorer;
+mod metadata;
 mod pools;
 mod session;
 mod state;
@@ -31,6 +34,7 @@ async fn main() -> anyhow::Result<()> {
         pools::PoolManager::default(),
         cipher,
     );
+    backup::spawn_scheduler(state.clone());
 
     let app = Router::new()
         .route("/", get(auth::root))

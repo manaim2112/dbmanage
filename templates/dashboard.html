@@ -6,7 +6,7 @@
   <nav class="topnav">
     <a class="active" href="">Dashboard</a>
     <a href="connections">Connections</a>
-    <a href="#" title="Hadir di Milestone 4">Backups</a>
+    <a href="backups">Backups</a>
   </nav>
   <form method="post" action="logout">
     <button type="submit" class="btn-ghost">{{ username }} &middot; Logout</button>
@@ -30,7 +30,8 @@
   </section>
   <section class="card">
     <h2>Backup Otomatis</h2>
-    <p class="muted">Autobackup ke S3 &amp; Google Drive hadir di M4.</p>
+    <p class="muted">{{ backups }} konfigurasi backup. Autobackup terjadwal ke S3 &amp; Google Drive dengan retensi otomatis.</p>
+    <a class="btn-primary btn-inline btn-link" href="backups">Kelola Backup</a>
   </section>
   <p class="muted small">session {{ session_short }}&hellip;</p>
 </main>

@@ -271,3 +271,219 @@ a.btn-primary.btn-link { text-decoration: none; }
   transition: border-color 0.15s ease;
 }
 .auth-card select:focus { border-color: var(--accent); }
+
+/* ---------- Explorer (M3) ---------- */
+.page.wide { max-width: 1320px; }
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+.crumbs .spacer { flex: 1; }
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.tabs a {
+  color: var(--muted);
+  padding: 9px 16px;
+  font-size: 14px;
+  border-radius: 8px 8px 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+}
+.tabs a:hover { color: var(--text); background: var(--panel-2); }
+.tabs a.active {
+  color: var(--text);
+  background: var(--panel);
+  border-color: var(--border);
+  position: relative;
+  top: 1px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.toolbar .spacer { flex: 1; }
+.toolbar form, .toolbar .filter-form { display: flex; gap: 6px; align-items: center; margin: 0; }
+
+.filter-form select, .filter-form input[type="text"] {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+  font-family: var(--ui);
+  outline: none;
+}
+.filter-form select:focus, .filter-form input[type="text"]:focus { border-color: var(--accent); }
+
+.scroll-x { overflow-x: auto; }
+
+.table.grid td.cell {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 12.5px;
+}
+.table.grid th { white-space: nowrap; }
+.table.grid th a { color: var(--muted); }
+.table.grid th a:hover { color: var(--text); }
+.sort-arrow { color: var(--accent); font-size: 11px; margin-left: 2px; }
+.null { color: var(--muted); font-style: italic; font-size: 12px; }
+
+.edit-row td { background: var(--panel-2); }
+.edit-row input[type="text"] {
+  width: 100%;
+  min-width: 90px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12.5px;
+  font-family: var(--mono);
+  outline: none;
+}
+.edit-row input[type="text"]:focus { border-color: var(--accent); }
+
+.pager { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
+
+/* badge warna per kategori tipe data */
+.badge.cat-int { color: #7dd3fc; border-color: rgba(56, 189, 248, 0.35); }
+.badge.cat-dec { color: #a5b4fc; border-color: rgba(129, 140, 248, 0.35); }
+.badge.cat-str { color: #86efac; border-color: rgba(74, 222, 128, 0.35); }
+.badge.cat-time { color: #fcd34d; border-color: rgba(251, 191, 36, 0.35); }
+.badge.cat-bool { color: #f9a8d4; border-color: rgba(244, 114, 182, 0.35); }
+.badge.cat-json { color: #fdba74; border-color: rgba(251, 146, 60, 0.35); }
+.badge.cat-bin { color: #94a3b8; border-color: rgba(148, 163, 184, 0.35); }
+.badge.cat-uuid { color: #c4b5fd; border-color: rgba(167, 139, 250, 0.35); }
+.badge.key-PK { color: #fcd34d; border-color: rgba(251, 191, 36, 0.4); }
+.badge.key-UQ { color: #7dd3fc; border-color: rgba(56, 189, 248, 0.4); }
+th.cat-int a { color: #7dd3fc; }
+th.cat-dec a { color: #a5b4fc; }
+th.cat-str a { color: #86efac; }
+th.cat-time a { color: #fcd34d; }
+th.cat-bool a { color: #f9a8d4; }
+th.cat-json a { color: #fdba74; }
+th.cat-bin a { color: #94a3b8; }
+th.cat-uuid a { color: #c4b5fd; }
+
+.code-block {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  font-family: var(--mono);
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
+
+.sql-input {
+  width: 100%;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  font-family: var(--mono);
+  outline: none;
+  resize: vertical;
+}
+.sql-input:focus { border-color: var(--accent); }
+
+.check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.btn-primary.no-mt { margin-top: 0; }
+
+.form-inline { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+.form-inline input {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: var(--mono);
+  outline: none;
+  min-width: 240px;
+}
+.form-inline input:focus { border-color: var(--accent); }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+.form-grid label { display: block; font-size: 13px; color: var(--muted); }
+.form-grid input, .form-grid select {
+  width: 100%;
+  margin-top: 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: var(--ui);
+  outline: none;
+}
+.form-grid input:focus, .form-grid select:focus { border-color: var(--accent); }
+.form-grid .btn-primary { grid-column: 1 / -1; justify-self: start; }
+
+.erd-box {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+  overflow-x: auto;
+}
+.erd-box .mermaid { background: transparent; border: 0; padding: 0; margin: 0; }
+
+/* ---------- Backup (M4) ---------- */
+.status {
+  display: inline-block;
+  font-size: 12px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.status-success { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+.status-failed { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+.status-running { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; }
+.status-belum { background: var(--panel-2); color: var(--muted); }
+.err-text { max-width: 300px; word-break: break-word; }
+
+.form-section {
+  grid-column: 1 / -1;
+  border: 1px dashed var(--border-h);
+  border-radius: 10px;
+  padding: 16px;
+}
+.form-section h3 { margin: 0 0 10px; font-size: 14px; color: var(--text); }
+.form-section .form-grid { margin-top: 0; }

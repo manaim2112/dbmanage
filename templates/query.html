@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}SQL — {{ db }} — DBManage{% endblock %}
+{% block content %}
+<header class="topbar">
+  <div class="brand">&#9672; DBManage</div>
+  <nav class="topnav">
+    <a href="../../..">Dashboard</a>
+    <a class="active" href="../..">Connections</a>
+    <a href="../../../backups">Backups</a>
+  </nav>
+  <form method="post" action="../../../logout">
+    <button type="submit" class="btn-ghost">Logout</button>
+  </form>
+</header>
+<main class="page wide">
+  <nav class="crumbs">
+    <a href="../..">Koneksi</a> <span>&rsaquo;</span>
+    <a href="..">{{ conn_name }}</a> <span>&rsaquo;</span>
+    <a href="tables">{{ db }}</a> <span>&rsaquo;</span>
+    <span class="strong">SQL Editor</span>
+  </nav>
+  <section class="card">
+    <form method="post" action="query">
+      <textarea name="sql" class="sql-input" rows="7" placeholder="SELECT * FROM nama_tabel LIMIT 50;">{{ sql }}</textarea>
+      <div class="toolbar">
+        <label class="check"><input type="checkbox" name="write" value="1" {% if write %}checked{% endif %}> Mode tulis (INSERT/UPDATE/DELETE/DDL) — tercatat di audit log</label>
+        <span class="spacer"></span>
+        <button type="submit" class="btn-primary btn-inline no-mt">Jalankan</button>
+      </div>
+    </form>
+    {% if !error.is_empty() %}<div class="alert">{{ error }}</div>{% endif %}
+    {% if let Some(r) = result %}
+    {% if let Some(n) = r.affected %}
+    <div class="flash-ok">Query berhasil — {{ n }} baris terpengaruh ({{ r.duration_ms }} ms).</div>
+    {% else %}
+    <p class="muted small">{{ r.row_count }} baris &middot; {{ r.duration_ms }} ms</p>
+    <div class="scroll-x">
+    <table class="table grid">
+      <thead>
+        <tr>{% for c in r.columns %}<th>{{ c }}</th>{% endfor %}</tr>
+      </thead>
+      <tbody>
+        {% for row in r.rows %}
+        <tr>{% for cell in row %}<td class="cell">{{ cell }}</td>{% endfor %}</tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% endif %}
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

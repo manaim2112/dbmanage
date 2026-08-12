@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ db }} — {{ conn_name }} — DBManage{% endblock %}
+{% block content %}
+<header class="topbar">
+  <div class="brand">&#9672; DBManage</div>
+  <nav class="topnav">
+    <a href="../../..">Dashboard</a>
+    <a class="active" href="../..">Connections</a>
+    <a href="../../../backups">Backups</a>
+  </nav>
+  <form method="post" action="../../../logout">
+    <button type="submit" class="btn-ghost">Logout</button>
+  </form>
+</header>
+<main class="page">
+  {% if let Some(m) = flash_ok %}<div class="flash-ok">{{ m }}</div>{% endif %}
+  {% if let Some(e) = flash_err %}<div class="alert">{{ e }}</div>{% endif %}
+  <nav class="crumbs">
+    <a href="../..">Koneksi</a> <span>&rsaquo;</span>
+    <a href="..">{{ conn_name }}</a> <span>&rsaquo;</span>
+    <span class="strong mono">{{ db }}</span>
+    <span class="spacer"></span>
+    <a class="btn-mini" href="erd">ERD</a>
+    <a class="btn-mini" href="query">SQL Editor</a>
+  </nav>
+  <section class="card">
+    <div class="row-between">
+      <h2>Tabel</h2>
+      <span class="muted small">{{ tables.len() }} tabel</span>
+    </div>
+    {% if tables.is_empty() %}
+    <p class="muted">Database ini belum memiliki tabel.</p>
+    {% else %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nama</th>
+          <th>Engine</th>
+          <th>Baris</th>
+          <th>Ukuran</th>
+          <th>FK</th>
+          <th>Collation</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tables %}
+        <tr>
+          <td><a class="strong" href="tables/{{ t.name|urlencode }}">{{ t.name }}</a></td>
+          <td class="muted">{{ t.engine }}</td>
+          <td class="mono">{{ t.rows }}</td>
+          <td class="muted mono">{{ t.size }}</td>
+          <td>{% if t.fk_count > 0 %}<span class="badge">{{ t.fk_count }}</span>{% else %}<span class="muted">&mdash;</span>{% endif %}</td>
+          <td class="muted small">{{ t.collation }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

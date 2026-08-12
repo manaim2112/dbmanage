@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}ERD — {{ db }} — DBManage{% endblock %}
+{% block content %}
+<header class="topbar">
+  <div class="brand">&#9672; DBManage</div>
+  <nav class="topnav">
+    <a href="../../..">Dashboard</a>
+    <a class="active" href="../..">Connections</a>
+    <a href="../../../backups">Backups</a>
+  </nav>
+  <form method="post" action="../../../logout">
+    <button type="submit" class="btn-ghost">Logout</button>
+  </form>
+</header>
+<main class="page wide">
+  <nav class="crumbs">
+    <a href="../..">Koneksi</a> <span>&rsaquo;</span>
+    <a href="..">{{ conn_name }}</a> <span>&rsaquo;</span>
+    <a href="tables">{{ db }}</a> <span>&rsaquo;</span>
+    <span class="strong">ERD</span>
+  </nav>
+  <section class="card">
+    <h2>Entity Relationship Diagram — {{ db }}</h2>
+    {% if has_fks %}
+    <div class="erd-box">
+      <pre class="mermaid">{{ mermaid }}</pre>
+    </div>
+    {% else %}
+    <p class="muted">Tidak ada foreign key di database ini — diagram relasi kosong. Struktur tabel tetap ditampilkan di bawah.</p>
+    <div class="erd-box">
+      <pre class="mermaid">{{ mermaid }}</pre>
+    </div>
+    {% endif %}
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+</script>
+{% endblock %}

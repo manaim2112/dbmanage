@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Database — {{ conn_name }} — DBManage{% endblock %}
+{% block content %}
+<header class="topbar">
+  <div class="brand">&#9672; DBManage</div>
+  <nav class="topnav">
+    <a href="../..">Dashboard</a>
+    <a class="active" href="..">Connections</a>
+    <a href="../../backups">Backups</a>
+  </nav>
+  <form method="post" action="../../logout">
+    <button type="submit" class="btn-ghost">Logout</button>
+  </form>
+</header>
+<main class="page">
+  {% if let Some(m) = flash_ok %}<div class="flash-ok">{{ m }}</div>{% endif %}
+  {% if let Some(e) = flash_err %}<div class="alert">{{ e }}</div>{% endif %}
+  <nav class="crumbs">
+    <a href="..">Koneksi</a> <span>&rsaquo;</span> <span class="strong">{{ conn_name }}</span>
+    <span class="badge">{{ db_type }}</span>
+    <span class="spacer"></span>
+    <a class="btn-mini" href="users">Kelola User</a>
+  </nav>
+  <section class="card">
+    <div class="row-between">
+      <h2>Database</h2>
+    </div>
+    {% if dbs.is_empty() %}
+    <p class="muted">Belum ada database. Buat satu melalui form di bawah.</p>
+    {% else %}
+    <table class="table">
+      <thead>
+        <tr><th>Nama</th><th>Aksi</th></tr>
+      </thead>
+      <tbody>
+        {% for d in dbs %}
+        <tr>
+          <td class="strong mono">{{ d }}</td>
+          <td>
+            <div class="actions">
+              <a class="btn-mini" href="databases/{{ d|urlencode }}/tables">Buka</a>
+              <form method="post" action="databases/{{ d|urlencode }}/delete" onsubmit="return confirm('Hapus database {{ d }} beserta seluruh isinya?')">
+                <button type="submit" class="btn-mini danger">Hapus</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+  <section class="card">
+    <h2>Buat Database Baru</h2>
+    <form method="post" action="databases" class="form-inline">
+      <input type="text" name="name" placeholder="nama_database" pattern="[A-Za-z_][A-Za-z0-9_]{0,62}" required>
+      <button type="submit" class="btn-primary btn-inline">Buat Database</button>
+    </form>
+    <p class="muted small">Hanya huruf, angka, dan underscore; tidak diawali angka.</p>
+  </section>
+</main>
+{% endblock %}

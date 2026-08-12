@@ -43,6 +43,8 @@ pub fn app_router() -> Router<AppState> {
         .route("/setup", get(setup_page).post(setup_submit))
         .route("/totp-setup", get(totp_page).post(totp_submit))
         .merge(crate::connections::router())
+        .merge(crate::explorer::router())
+        .merge(crate::backup::router())
         .layer(middleware::from_fn(require_session))
 }
 

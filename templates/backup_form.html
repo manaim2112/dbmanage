@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}{% if is_edit %}Edit Backup{% else %}Backup Baru{% endif %} — DBManage{% endblock %}
+{% block content %}
+<header class="topbar">
+  <div class="brand">&#9672; DBManage</div>
+  <nav class="topnav">
+    <a href="{% if is_edit %}../..{% else %}.{% endif %}">Dashboard</a>
+    <a href="{% if is_edit %}../..{% else %}.{% endif %}/connections">Connections</a>
+    <a class="active" href="{% if is_edit %}../..{% else %}.{% endif %}/backups">Backups</a>
+  </nav>
+  <form method="post" action="{% if is_edit %}../../{% endif %}logout">
+    <button type="submit" class="btn-ghost">Logout</button>
+  </form>
+</header>
+<main class="page">
+  <section class="card">
+    <h2>{% if is_edit %}Edit Konfigurasi Backup{% else %}Konfigurasi Backup Baru{% endif %}</h2>
+    {% if !error.is_empty() %}<div class="alert">{{ error }}</div>{% endif %}
+    <form method="post" action="{% if is_edit %}..{% else %}backups{% endif %}" class="form-grid">
+      <label>Koneksi
+        <select name="connection_id" required>
+          <option value="">— pilih koneksi —</option>
+          {% for c in connections %}<option value="{{ c.0 }}" {% if conn_id == c.0 %}selected{% endif %}>{{ c.1 }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Nama database
+        <input type="text" name="database_name" value="{{ database_name }}" required>
+      </label>
+      <label>Provider penyimpanan
+        <select name="provider" id="provider" onchange="toggleProvider()">
+          <option value="s3" {% if provider == "s3" %}selected{% endif %}>S3 / Object Storage</option>
+          <option value="gdrive" {% if provider == "gdrive" %}selected{% endif %}>Google Drive</option>
+        </select>
+      </label>
+      <label>Retensi (hari)
+        <input type="number" name="retention_days" value="{{ retention_days }}" min="1" max="365" required>
+      </label>
+
+      <div id="sec-s3" class="form-section">
+        <h3>S3 / Object Storage</h3>
+        <div class="form-grid">
+          <label>Endpoint (kosongkan utk AWS)
+            <input type="text" name="endpoint" value="{{ endpoint }}" placeholder="https://s3.wasabisys.com">
+          </label>
+          <label>Region
+            <input type="text" name="region" value="{{ region }}">
+          </label>
+          <label>Bucket
+            <input type="text" name="bucket" value="{{ bucket }}">
+          </label>
+          <label>Prefix path
+            <input type="text" name="prefix" value="{{ prefix }}" placeholder="backups/">
+          </label>
+          <label>Access Key
+            <input type="text" name="access_key" value="{{ access_key }}" autocomplete="off">
+          </label>
+          <label>Secret Key
+            <input type="password" name="secret_key" value="{{ secret_key }}" autocomplete="off">
+          </label>
+        </div>
+      </div>
+
+      <div id="sec-gdrive" class="form-section">
+        <h3>Google Drive</h3>
+        <div class="form-grid">
+          <label>Client ID
+            <input type="text" name="client_id" value="{{ client_id }}" autocomplete="off">
+          </label>
+          <label>Client Secret
+            <input type="password" name="client_secret" value="{{ client_secret }}" autocomplete="off">
+          </label>
+          <label>Refresh Token
+            <input type="text" name="refresh_token" value="{{ refresh_token }}" autocomplete="off">
+          </label>
+          <label>Folder ID (opsional)
+            <input type="text" name="folder_id" value="{{ folder_id }}">
+          </label>
+        </div>
+      </div>
+
+      <label>Frekuensi
+        <select name="freq">
+          <option value="daily" {% if freq == "daily" %}selected{% endif %}>Harian</option>
+          <option value="weekly" {% if freq == "weekly" %}selected{% endif %}>Mingguan</option>
+        </select>
+      </label>
+      <label>Jam (HH:MM)
+        <input type="time" name="time" value="{{ time }}" required>
+      </label>
+      <label>Hari (untuk mingguan)
+        <select name="day">
+          <option value="mon" {% if day == "mon" %}selected{% endif %}>Senin</option>
+          <option value="tue" {% if day == "tue" %}selected{% endif %}>Selasa</option>
+          <option value="wed" {% if day == "wed" %}selected{% endif %}>Rabu</option>
+          <option value="thu" {% if day == "thu" %}selected{% endif %}>Kamis</option>
+          <option value="fri" {% if day == "fri" %}selected{% endif %}>Jumat</option>
+          <option value="sat" {% if day == "sat" %}selected{% endif %}>Sabtu</option>
+          <option value="sun" {% if day == "sun" %}selected{% endif %}>Minggu</option>
+        </select>
+      </label>
+      <label class="check" style="align-self:end">
+        <input type="checkbox" name="enabled" value="1" {% if enabled %}checked{% endif %}> Aktifkan jadwal otomatis
+      </label>
+
+      <div style="grid-column: 1 / -1; display: flex; gap: 10px;">
+        <button type="submit" class="btn-primary btn-inline no-mt">{% if is_edit %}Simpan{% else %}Buat Konfigurasi{% endif %}</button>
+        <a class="btn-mini" style="align-self:center" href="{% if is_edit %}../..{% else %}.{% endif %}/backups">Batal</a>
+      </div>
+    </form>
+  </section>
+</main>
+<script>
+function toggleProvider() {
+  var p = document.getElementById('provider').value;
+  document.getElementById('sec-s3').style.display = p === 's3' ? '' : 'none';
+  document.getElementById('sec-gdrive').style.display = p === 'gdrive' ? '' : 'none';
+}
+toggleProvider();
+</script>
+{% endblock %}

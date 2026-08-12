@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block title %}{{ tbl }} — {{ db }} — DBManage{% endblock %}
+{% block content %}
+<header class="topbar">
+  <div class="brand">&#9672; DBManage</div>
+  <nav class="topnav">
+    <a href="../../../..">Dashboard</a>
+    <a class="active" href="../../..">Connections</a>
+    <a href="../../../../backups">Backups</a>
+  </nav>
+  <form method="post" action="../../../../logout">
+    <button type="submit" class="btn-ghost">Logout</button>
+  </form>
+</header>
+<main class="page wide">
+  {% if let Some(m) = flash_ok %}<div class="flash-ok">{{ m }}</div>{% endif %}
+  {% if let Some(e) = flash_err %}<div class="alert">{{ e }}</div>{% endif %}
+  <nav class="crumbs">
+    <a href="../../..">Koneksi</a> <span>&rsaquo;</span>
+    <a href="../..">{{ conn_name }}</a> <span>&rsaquo;</span>
+    <a href="..">{{ db }}</a> <span>&rsaquo;</span>
+    <span class="strong mono">{{ tbl }}</span>
+  </nav>
+  <div class="tabs">
+    <a class="{% if tab == "struktur" %}active{% endif %}" href="?tab=struktur">Struktur</a>
+    <a class="{% if tab == "data" %}active{% endif %}" href="?tab=data">Data</a>
+    <a class="{% if tab == "relasi" %}active{% endif %}" href="?tab=relasi">Relasi</a>
+    <a class="{% if tab == "ddl" %}active{% endif %}" href="?tab=ddl">DDL</a>
+  </div>
+
+  {% if tab == "struktur" %}
+  <section class="card">
+    <h2>Kolom ({{ columns.len() }})</h2>
+    <div class="scroll-x">
+    <table class="table">
+      <thead>
+        <tr><th>Nama</th><th>Tipe</th><th>Null</th><th>Default</th><th>Key</th><th>Extra</th><th>Comment</th></tr>
+      </thead>
+      <tbody>
+        {% for c in columns %}
+        <tr>
+          <td class="strong mono">{{ c.name }}</td>
+          <td><span class="badge cat-{{ c.category }}">{{ c.data_type }}</span></td>
+          <td>{% if c.nullable %}<span class="muted">YES</span>{% else %}NO{% endif %}</td>
+          <td class="muted mono">{{ c.default.as_deref().unwrap_or("—") }}</td>
+          <td>{% if !c.key.is_empty() %}<span class="badge key-{{ c.key }}">{{ c.key }}</span>{% endif %}</td>
+          <td class="muted small">{{ c.extra }}</td>
+          <td class="muted small">{{ c.comment }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </section>
+  <section class="card">
+    <h2>Index</h2>
+    {% if indexes.is_empty() %}
+    <p class="muted">Tidak ada index.</p>
+    {% else %}
+    <table class="table">
+      <thead><tr><th>Nama</th><th>Unik</th><th>Kolom</th><th>Tipe</th></tr></thead>
+      <tbody>
+        {% for i in indexes %}
+        <tr>
+          <td class="mono">{{ i.name }}</td>
+          <td>{% if i.unique %}<span class="badge">UNIK</span>{% else %}<span class="muted">tidak</span>{% endif %}</td>
+          <td class="mono">{{ i.columns }}</td>
+          <td class="muted">{{ i.detail }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if tab == "data" %}
+  {% if let Some(g) = grid %}
+  <section class="card">
+    <div class="toolbar">
+      <form method="get" class="filter-form">
+        <input type="hidden" name="tab" value="data">
+        <select name="fcol">
+          <option value="">— kolom —</option>
+          {% for c in g.cols %}<option value="{{ c }}" {% if g.filter_col == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+        </select>
+        <select name="fop">
+          <option value="=" {% if g.filter_op == "=" %}selected{% endif %}>=</option>
+          <option value="!=" {% if g.filter_op == "!=" %}selected{% endif %}>!=</option>
+          <option value="LIKE" {% if g.filter_op == "LIKE" %}selected{% endif %}>LIKE</option>
+          <option value=">" {% if g.filter_op == ">" %}selected{% endif %}>&gt;</option>
+          <option value=">=" {% if g.filter_op == ">=" %}selected{% endif %}>&gt;=</option>
+          <option value="<" {% if g.filter_op == "<" %}selected{% endif %}>&lt;</option>
+          <option value="<=" {% if g.filter_op == "<=" %}selected{% endif %}>&lt;=</option>
+        </select>
+        <input type="text" name="fval" value="{{ g.filter_val }}" placeholder="nilai">
+        <button type="submit" class="btn-mini">Filter</button>
+      </form>
+      {% if !g.filter_val.is_empty() %}<a class="btn-mini" href="?tab=data">Reset</a>{% endif %}
+      <span class="spacer"></span>
+      <span class="muted small">{{ g.total }} baris</span>
+      <a class="btn-mini" href="?tab=data&amp;new=1">+ Tambah Baris</a>
+    </div>
+    <div class="scroll-x">
+    <table class="table grid">
+      <thead>
+        <tr>
+          {% for c in g.cols %}
+          <th class="cat-{{ g.categories[loop.index0] }}">
+            <a href="?tab=data{% if !g.filter_qs.is_empty() %}&amp;{{ g.filter_qs }}{% endif %}&amp;sort={{ c|urlencode }}&amp;dir={% if g.sort == c && g.dir == "asc" %}desc{% else %}asc{% endif %}">{{ c }}</a>
+            {% if g.sort == c %}<span class="sort-arrow">{% if g.dir == "asc" %}&uarr;{% else %}&darr;{% endif %}</span>{% endif %}
+          </th>
+          {% endfor %}
+          {% if !g.pk_col.is_empty() %}<th>Aksi</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% if g.new_row %}
+        <tr class="edit-row">
+          {% for c in columns %}
+          <td>
+            <input type="text" form="newrow" name="f:{{ c.name }}"
+              placeholder="{% if c.extra.contains("auto_increment") %}auto{% endif %}"
+              title="{{ c.data_type }}{% if c.nullable %} (nullable — kosongkan utk NULL){% endif %}">
+          </td>
+          {% endfor %}
+          {% if !g.pk_col.is_empty() %}
+          <td class="actions">
+            <button type="submit" form="newrow" class="btn-mini">Simpan</button>
+            <a class="btn-mini" href="?tab=data">Batal</a>
+          </td>
+          {% endif %}
+        </tr>
+        {% endif %}
+        {% for row in g.rows %}
+        {% if !g.edit_pk.is_empty() && g.edit_pk == row.pk %}
+        <tr class="edit-row">
+          {% for cell in row.cells %}
+          <td><input type="text" form="editrow" name="f:{{ g.cols[loop.index0] }}" value="{{ cell.v }}"></td>
+          {% endfor %}
+          <td class="actions">
+            <input type="hidden" form="editrow" name="__pk" value="{{ row.pk }}">
+            <button type="submit" form="editrow" class="btn-mini">Simpan</button>
+            <a class="btn-mini" href="?tab=data{% if !g.filter_qs.is_empty() %}&amp;{{ g.filter_qs }}{% endif %}{% if !g.sort_qs.is_empty() %}&amp;{{ g.sort_qs }}{% endif %}&amp;page={{ g.page }}">Batal</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          {% for cell in row.cells %}
+          <td class="cell cat-{{ g.categories[loop.index0] }}" title="{{ cell.v }}">{% if cell.null %}<span class="null">NULL</span>{% else %}{{ cell.v }}{% endif %}</td>
+          {% endfor %}
+          {% if !g.pk_col.is_empty() %}
+          <td>
+            <div class="actions">
+              <a class="btn-mini" href="?tab=data&amp;edit={{ row.pk|urlencode }}">Edit</a>
+              <form method="post" action="{{ tbl|urlencode }}/rows/delete" onsubmit="return confirm('Hapus baris {{ g.pk_col }} = {{ row.pk }}?')">
+                <input type="hidden" name="__pk" value="{{ row.pk }}">
+                <button type="submit" class="btn-mini danger">Hapus</button>
+              </form>
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+        {% endif %}
+        {% endfor %}
+        {% if g.rows.is_empty() %}
+        <tr><td colspan="{{ g.cols.len() + 1 }}" class="muted">Tidak ada baris{% if !g.filter_val.is_empty() %} yang cocok dengan filter{% endif %}.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+    </div>
+    {% if g.new_row %}
+    <form id="newrow" method="post" action="{{ tbl|urlencode }}/rows"></form>
+    {% endif %}
+    {% if !g.edit_pk.is_empty() %}
+    <form id="editrow" method="post" action="{{ tbl|urlencode }}/rows/update"></form>
+    {% endif %}
+    <div class="pager">
+      {% if g.page > 0 %}
+      <a class="btn-mini" href="?tab=data{% if !g.filter_qs.is_empty() %}&amp;{{ g.filter_qs }}{% endif %}{% if !g.sort_qs.is_empty() %}&amp;{{ g.sort_qs }}{% endif %}&amp;page={{ g.page - 1 }}">&larr; Sebelumnya</a>
+      {% endif %}
+      <span class="muted small">halaman {{ g.page + 1 }} / {% if g.pages == 0 %}1{% else %}{{ g.pages }}{% endif %}</span>
+      {% if g.page + 1 < g.pages %}
+      <a class="btn-mini" href="?tab=data{% if !g.filter_qs.is_empty() %}&amp;{{ g.filter_qs }}{% endif %}{% if !g.sort_qs.is_empty() %}&amp;{{ g.sort_qs }}{% endif %}&amp;page={{ g.page + 1 }}">Berikutnya &rarr;</a>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+  {% endif %}
+
+  {% if tab == "relasi" %}
+  <section class="card">
+    <h2>Foreign Key (keluar)</h2>
+    {% if fks.is_empty() %}
+    <p class="muted">Tabel ini tidak memiliki foreign key.</p>
+    {% else %}
+    <table class="table">
+      <thead><tr><th>Constraint</th><th>Kolom</th><th>Referensi</th><th>On Delete</th><th>On Update</th></tr></thead>
+      <tbody>
+        {% for f in fks %}
+        <tr>
+          <td class="mono">{{ f.name }}</td>
+          <td class="mono">{{ f.column }}</td>
+          <td><a class="mono" href="{{ f.ref_table|urlencode }}">{{ f.ref_table }}</a>.<span class="mono">{{ f.ref_column }}</span></td>
+          <td class="muted">{{ f.on_delete }}</td>
+          <td class="muted">{{ f.on_update }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+  <section class="card">
+    <h2>Direferensikan oleh (masuk)</h2>
+    {% if refs.is_empty() %}
+    <p class="muted">Tidak ada tabel lain yang mereferensikan tabel ini.</p>
+    {% else %}
+    <table class="table">
+      <thead><tr><th>Tabel</th><th>Kolom FK</th></tr></thead>
+      <tbody>
+        {% for r in refs %}
+        <tr>
+          <td><a class="mono" href="{{ r.table|urlencode }}">{{ r.table }}</a></td>
+          <td class="mono">{{ r.column }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+  <section class="card">
+    <h2>ERD</h2>
+    <p class="muted">Lihat diagram relasi seluruh database di <a href="../erd">halaman ERD</a>.</p>
+  </section>
+  {% endif %}
+
+  {% if tab == "ddl" %}
+  <section class="card">
+    <h2>DDL — {{ tbl }}</h2>
+    <pre class="code-block">{{ ddl }}</pre>
+  </section>
+  {% endif %}
+</main>
+{% endblock %}

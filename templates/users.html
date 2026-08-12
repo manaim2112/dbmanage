@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}User — {{ conn_name }} — DBManage{% endblock %}
+{% block content %}
+<header class="topbar">
+  <div class="brand">&#9672; DBManage</div>
+  <nav class="topnav">
+    <a href="../..">Dashboard</a>
+    <a class="active" href="..">Connections</a>
+    <a href="../../backups">Backups</a>
+  </nav>
+  <form method="post" action="../../logout">
+    <button type="submit" class="btn-ghost">Logout</button>
+  </form>
+</header>
+<main class="page">
+  {% if let Some(m) = flash_ok %}<div class="flash-ok">{{ m }}</div>{% endif %}
+  {% if let Some(e) = flash_err %}<div class="alert">{{ e }}</div>{% endif %}
+  <nav class="crumbs">
+    <a href="..">Koneksi</a> <span>&rsaquo;</span>
+    <a href="databases">{{ conn_name }}</a> <span>&rsaquo;</span>
+    <span class="strong">User</span>
+  </nav>
+  <section class="card">
+    <h2>User Database</h2>
+    {% if users.is_empty() %}
+    <p class="muted">Tidak ada user yang terlihat.</p>
+    {% else %}
+    <table class="table">
+      <thead>
+        <tr><th>Username</th><th>Host</th><th>Aksi</th></tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td class="strong mono">{{ u.0 }}</td>
+          <td class="muted mono">{{ u.1 }}</td>
+          <td>
+            <form method="post" action="users/delete" onsubmit="return confirm('Hapus user {{ u.0 }}?')">
+              <input type="hidden" name="username" value="{{ u.0 }}">
+              <input type="hidden" name="host" value="{{ u.1 }}">
+              <button type="submit" class="btn-mini danger">Hapus</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+  <section class="card">
+    <h2>Buat User Baru</h2>
+    <form method="post" action="users" class="form-grid">
+      <label>Username
+        <input type="text" name="username" pattern="[A-Za-z_][A-Za-z0-9_]{0,62}" required>
+      </label>
+      <label>Password
+        <input type="text" name="password" placeholder="kosongkan untuk generate otomatis">
+      </label>
+      <label>Grant ke database
+        <select name="grant_db">
+          <option value="">— tanpa grant —</option>
+          {% for d in dbs %}<option value="{{ d }}">{{ d }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>Level akses
+        <select name="priv_level">
+          <option value="ALL">Penuh (ALL)</option>
+          <option value="RW">Baca-tulis (SELECT, INSERT, UPDATE, DELETE)</option>
+          <option value="SELECT">Baca saja (SELECT)</option>
+        </select>
+      </label>
+      <button type="submit" class="btn-primary btn-inline">Buat User</button>
+    </form>
+    <p class="muted small">Password kosong akan digenerate otomatis (24 karakter kuat) dan ditampilkan sekali setelah dibuat.</p>
+  </section>
+</main>
+{% endblock %}

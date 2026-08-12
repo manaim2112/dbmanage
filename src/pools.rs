@@ -105,7 +105,8 @@ pub async fn create_pool(
                 .host(host)
                 .port(port)
                 .username(username)
-                .password(password);
+                .password(password)
+                .database("postgres");
             let pool = PgPoolOptions::new()
                 .min_connections(2)
                 .max_connections(10)
@@ -122,6 +123,8 @@ pub async fn create_pool(
 #[derive(Clone, Default)]
 pub struct PoolManager {
     pools: Arc<RwLock<HashMap<i64, PoolHandle>>>,
+    /// Sub-pool PostgreSQL per database (PG tidak bisa query lintas database).
+    db_pools: Arc<RwLock<HashMap<(i64, String), PgPool>>>,
 }
 
 impl PoolManager {
@@ -138,6 +141,54 @@ impl PoolManager {
     pub async fn remove(&self, id: i64) {
         if let Some(old) = self.pools.write().await.remove(&id) {
             old.close().await;
+        }
+        let mut db_pools = self.db_pools.write().await;
+        let keys: Vec<(i64, String)> = db_pools
+            .keys()
+            .filter(|(cid, _)| *cid == id)
+            .cloned()
+            .collect();
+        for key in keys {
+            if let Some(pool) = db_pools.remove(&key) {
+                pool.close().await;
+            }
+        }
+    }
+
+    /// Pool untuk database PostgreSQL tertentu pada connection `id`.
+    pub async fn pg_pool(
+        &self,
+        id: i64,
+        database: &str,
+        host: &str,
+        port: u16,
+        username: &str,
+        password: &str,
+    ) -> Result<PgPool> {
+        let key = (id, database.to_string());
+        if let Some(pool) = self.db_pools.read().await.get(&key) {
+            return Ok(pool.clone());
+        }
+        let opts = PgConnectOptions::new()
+            .host(host)
+            .port(port)
+            .username(username)
+            .password(password)
+            .database(database);
+        let pool = PgPoolOptions::new()
+            .min_connections(1)
+            .max_connections(5)
+            .acquire_timeout(Duration::from_secs(5))
+            .connect_with(opts)
+            .await?;
+        self.db_pools.write().await.insert(key, pool.clone());
+        Ok(pool)
+    }
+
+    /// Tutup sub-pool database PostgreSQL tertentu (dipakai sebelum DROP DATABASE).
+    pub async fn close_pg_db(&self, id: i64, database: &str) {
+        if let Some(p) = self.db_pools.write().await.remove(&(id, database.to_string())) {
+            p.close().await;
         }
     }
 }

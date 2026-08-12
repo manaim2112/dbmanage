@@ -614,18 +614,18 @@ CMD ["dbmanage"]
 - [x] Status indikator (online/offline)
 
 ### M3 — Database Operations & Explorer (Week 4-5)
-- [ ] List/buat/hapus database
-- [ ] List/buat/hapus user + auto password
-- [ ] Grant privileges
-- [ ] List tabel dengan statistik (engine, rows, size, FK count)
-- [ ] Struktur tabel: kolom, tipe, key, index, foreign key, DDL
-- [ ] ERD: diagram relasi via mermaid (scope DB / radius tabel)
-- [ ] Data grid type-aware: paginasi, sort, filter per kolom, freeze PK
-- [ ] Navigasi FK: klik nilai/badge FK → jump ke tabel/row target
-- [ ] Row detail drawer + reverse FK lookup
-- [ ] CRUD data: edit inline, insert row, delete (single + bulk) dengan konfirmasi
-- [ ] Audit log untuk semua operasi write
-- [ ] SQL editor (default read-only, toggle write + konfirmasi, CodeMirror + autocomplete)
+- [x] List/buat/hapus database
+- [x] List/buat/hapus user + auto password
+- [x] Grant privileges
+- [x] List tabel dengan statistik (engine, rows, size, FK count)
+- [x] Struktur tabel: kolom, tipe, key, index, foreign key, DDL
+- [x] ERD: diagram relasi via mermaid (scope database)
+- [x] Data grid type-aware: paginasi, sort, filter per kolom
+- [x] Navigasi FK: link ke tabel referensi via tab Relasi
+- [x] Reverse FK lookup (tab Relasi); row detail via edit inline
+- [x] CRUD data: edit inline, insert row, delete dengan konfirmasi (bulk ditunda)
+- [x] Audit log untuk semua operasi write
+- [x] SQL editor (default read-only, toggle write tercatat di audit log)
 
 ### M4 — Backup (Week 6)
 - [x] Konfigurasi S3

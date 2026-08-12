@@ -55,3 +55,121 @@ pub struct ConnectionForm {
     pub username: String,
     pub back: String,
 }
+
+#[derive(Template)]
+#[template(path = "databases.html")]
+pub struct Databases {
+    pub conn_id: i64,
+    pub conn_name: String,
+    pub db_type: String,
+    pub dbs: Vec<String>,
+    pub flash_ok: Option<String>,
+    pub flash_err: Option<String>,
+}
+
+#[derive(Template)]
+#[template(path = "users.html")]
+pub struct Users {
+    pub conn_id: i64,
+    pub conn_name: String,
+    pub db_type: String,
+    pub users: Vec<(String, String)>,
+    pub dbs: Vec<String>,
+    pub flash_ok: Option<String>,
+    pub flash_err: Option<String>,
+}
+
+#[derive(Template)]
+#[template(path = "tables.html")]
+pub struct Tables {
+    pub conn_id: i64,
+    pub conn_name: String,
+    pub db: String,
+    pub tables: Vec<crate::explorer::TableDisplay>,
+    pub flash_ok: Option<String>,
+    pub flash_err: Option<String>,
+}
+
+#[derive(Template)]
+#[template(path = "table.html")]
+pub struct TableDetail {
+    pub conn_id: i64,
+    pub conn_name: String,
+    pub db: String,
+    pub tbl: String,
+    pub tab: String,
+    pub columns: Vec<crate::metadata::ColumnInfo>,
+    pub indexes: Vec<crate::metadata::IndexInfo>,
+    pub fks: Vec<crate::metadata::FkInfo>,
+    pub refs: Vec<crate::metadata::FkEdge>,
+    pub ddl: String,
+    pub pk_single: String,
+    pub grid: Option<crate::explorer::Grid>,
+    pub flash_ok: Option<String>,
+    pub flash_err: Option<String>,
+}
+
+#[derive(Template)]
+#[template(path = "erd.html")]
+pub struct Erd {
+    pub conn_id: i64,
+    pub conn_name: String,
+    pub db: String,
+    pub mermaid: String,
+    pub has_fks: bool,
+}
+
+#[derive(Template)]
+#[template(path = "query.html")]
+pub struct Query {
+    pub conn_id: i64,
+    pub conn_name: String,
+    pub db: String,
+    pub sql: String,
+    pub write: bool,
+    pub result: Option<QueryResult>,
+    pub error: String,
+}
+
+pub struct QueryResult {
+    pub row_count: usize,
+    pub columns: Vec<String>,
+    pub rows: Vec<Vec<String>>,
+    pub affected: Option<u64>,
+    pub duration_ms: u128,
+}
+
+#[derive(Template)]
+#[template(path = "backups.html")]
+pub struct Backups {
+    pub configs: Vec<crate::backup::BackupRow>,
+    pub history: Vec<crate::backup::HistoryRow>,
+    pub flash_ok: Option<String>,
+    pub flash_err: Option<String>,
+}
+
+#[derive(Template)]
+#[template(path = "backup_form.html")]
+pub struct BackupFormPage {
+    pub is_edit: bool,
+    pub error: String,
+    pub connections: Vec<(i64, String)>,
+    pub conn_id: i64,
+    pub database_name: String,
+    pub provider: String,
+    pub endpoint: String,
+    pub region: String,
+    pub bucket: String,
+    pub access_key: String,
+    pub secret_key: String,
+    pub prefix: String,
+    pub client_id: String,
+    pub client_secret: String,
+    pub refresh_token: String,
+    pub folder_id: String,
+    pub freq: String,
+    pub time: String,
+    pub day: String,
+    pub retention_days: String,
+    pub enabled: bool,
+}
