@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — DBManage{% endblock %}
+{% block content %}
+<header class="topbar">
+  <div class="brand">&#9672; DBManage</div>
+  <nav class="topnav">
+    <a class="active" href="">Dashboard</a>
+    <a href="#" title="Hadir di Milestone 2">Connections</a>
+    <a href="#" title="Hadir di Milestone 4">Backups</a>
+  </nav>
+  <form method="post" action="logout">
+    <button type="submit" class="btn-ghost">{{ username }} &middot; Logout</button>
+  </form>
+</header>
+<main class="page">
+  <section class="stats">
+    <div class="card stat">
+      <div class="stat-num">{{ connections }}</div>
+      <div class="stat-label">Koneksi Database</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-num">{{ backups }}</div>
+      <div class="stat-label">Konfigurasi Backup</div>
+    </div>
+  </section>
+  <section class="card">
+    <h2>Koneksi Database</h2>
+    <p class="muted">Belum ada koneksi. Fitur tambah koneksi MariaDB &amp; PostgreSQL jarak jauh hadir di milestone berikutnya (M2).</p>
+    <button class="btn-primary btn-inline" disabled>+ Tambah Koneksi (segera)</button>
+  </section>
+  <section class="card">
+    <h2>Backup Otomatis</h2>
+    <p class="muted">Autobackup ke S3 &amp; Google Drive hadir di M4.</p>
+  </section>
+  <p class="muted small">session {{ session_short }}&hellip;</p>
+</main>
+{% endblock %}

@@ -1,0 +1,191 @@
+/* DBManage — dark-first design system (lihat PRD.md §8.0) */
+:root {
+  --bg: #0b0e14;
+  --panel: #11151f;
+  --panel-2: #0e1219;
+  --border: #1a2030;
+  --border-h: #2a3247;
+  --text: #e6e9f0;
+  --muted: #8a93a6;
+  --accent: #6366f1;
+  --accent-hover: #818cf8;
+  --ok: #10b981;
+  --err: #ef4444;
+  --warn: #f59e0b;
+  --radius: 10px;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --ui: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--ui);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+code, .mono {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 6px;
+  word-break: break-all;
+}
+
+.muted { color: var(--muted); }
+.small { font-size: 12.5px; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); }
+
+/* ---------- Buttons ---------- */
+.btn-primary, .btn-ghost {
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14.5px;
+  font-family: var(--ui);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  width: 100%;
+  margin-top: 20px;
+  font-weight: 600;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary.btn-inline { width: auto; margin-top: 12px; }
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--border-h); }
+
+/* ---------- Alert ---------- */
+.alert {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  margin: 14px 0 4px;
+  text-align: left;
+}
+
+/* ---------- Auth pages ---------- */
+.auth {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.auth-card {
+  width: 380px;
+  max-width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 34px 32px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+.auth-card.wide { width: 470px; text-align: center; }
+.brand { font-weight: 700; font-size: 21px; letter-spacing: 0.2px; }
+.auth-card p { margin: 8px 0 0; }
+.auth-card label {
+  display: block;
+  margin: 16px 0 6px;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: left;
+}
+.auth-card input {
+  width: 100%;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 15px;
+  font-family: var(--ui);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.auth-card input:focus { border-color: var(--accent); }
+
+.qr {
+  margin: 18px auto 10px;
+  width: 204px;
+  height: 204px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.qr svg { width: 100%; height: 100%; display: block; }
+
+/* ---------- Topbar ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.topbar .brand { font-size: 17px; }
+.topnav { display: flex; gap: 4px; flex: 1; }
+.topnav a {
+  color: var(--muted);
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.topnav a:hover { color: var(--text); background: var(--panel-2); }
+.topnav a.active { color: var(--text); background: var(--panel-2); }
+.topbar form { margin: 0; }
+
+/* ---------- Page ---------- */
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+}
+.card h2 { margin: 0 0 8px; font-size: 16px; }
+.card p { margin: 4px 0; }
+.stat .stat-num {
+  font-size: 30px;
+  font-weight: 700;
+  font-family: var(--mono);
+}
+.stat .stat-label { color: var(--muted); font-size: 13px; margin-top: 2px; }

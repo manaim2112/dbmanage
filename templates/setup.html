@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Setup Admin — DBManage{% endblock %}
+{% block content %}
+<main class="auth">
+  <div class="auth-card">
+    <div class="brand">&#9672; DBManage</div>
+    <p class="muted">Setup pertama kali: buat akun admin. Setelah ini Anda akan diminta mengaktifkan 2FA.</p>
+    {% if !error.is_empty() %}<div class="alert">{{ error }}</div>{% endif %}
+    <form method="post" action="setup">
+      <label for="u">Username</label>
+      <input id="u" name="username" required autocomplete="username" autofocus>
+      <label for="p">Password <span class="small muted">(min. 12 karakter)</span></label>
+      <input id="p" type="password" name="password" minlength="12" required autocomplete="new-password">
+      <label for="p2">Konfirmasi Password</label>
+      <input id="p2" type="password" name="password2" minlength="12" required autocomplete="new-password">
+      <button type="submit" class="btn-primary">Buat Admin &amp; Lanjut ke 2FA</button>
+    </form>
+  </div>
+</main>
+{% endblock %}

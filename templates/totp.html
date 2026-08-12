@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Aktifkan 2FA — DBManage{% endblock %}
+{% block content %}
+<main class="auth">
+  <div class="auth-card wide">
+    <div class="brand">&#9672; DBManage</div>
+    <p class="muted">Halo <strong>{{ username }}</strong> — scan QR di bawah dengan aplikasi authenticator (Google Authenticator / Authy), lalu masukkan kode 6 digit untuk mengaktifkan 2FA.</p>
+    {% if !error.is_empty() %}<div class="alert">{{ error }}</div>{% endif %}
+    <div class="qr">{{ svg|safe }}</div>
+    <p class="muted small">Atau masukkan secret manual: <code>{{ secret }}</code></p>
+    <form method="post" action="totp-setup">
+      <label for="c">Kode verifikasi</label>
+      <input id="c" name="code" inputmode="numeric" maxlength="6" required autofocus autocomplete="one-time-code">
+      <button type="submit" class="btn-primary">Aktifkan 2FA &amp; Masuk</button>
+    </form>
+  </div>
+</main>
+{% endblock %}

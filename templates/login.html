@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Login — DBManage{% endblock %}
+{% block content %}
+<main class="auth">
+  <div class="auth-card">
+    <div class="brand">&#9672; DBManage</div>
+    <p class="muted">Masuk untuk mengelola database Anda</p>
+    {% if !error.is_empty() %}<div class="alert">{{ error }}</div>{% endif %}
+    <form method="post" action="login">
+      <label for="u">Username</label>
+      <input id="u" name="username" required autocomplete="username" autofocus>
+      <label for="p">Password</label>
+      <input id="p" type="password" name="password" required autocomplete="current-password">
+      <label for="t">Kode 2FA</label>
+      <input id="t" name="totp" inputmode="numeric" maxlength="6" placeholder="6 digit" required autocomplete="one-time-code">
+      <button type="submit" class="btn-primary">Login</button>
+    </form>
+  </div>
+</main>
+{% endblock %}
