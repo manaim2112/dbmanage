@@ -133,7 +133,7 @@
         </tr>
         {% endif %}
         {% for row in g.rows %}
-        {% if !g.edit_pk.is_empty() && g.edit_pk.eq(&row.pk) %}
+        {% if !g.edit_pk.is_empty() && g.edit_pk == row.pk %}
         <tr class="edit-row">
           {% for cell in row.cells %}
           <td><input type="text" form="editrow" name="f:{{ g.cols[loop.index0] }}" value="{{ cell.v }}"></td>
