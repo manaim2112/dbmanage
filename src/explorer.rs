@@ -770,6 +770,12 @@ pub struct Grid {
     pub edit_pk: String,
 }
 
+impl Grid {
+    pub fn is_editing(&self, pk: &str) -> bool {
+        !self.edit_pk.is_empty() && self.edit_pk == pk
+    }
+}
+
 fn cast_expr(dialect: &str, col: &ColumnInfo) -> String {
     let q = metadata::qi(dialect, &col.name);
     if col.category == "bin" {
