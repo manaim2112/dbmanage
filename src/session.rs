@@ -25,6 +25,15 @@ pub fn redirect(url: String) -> Response {
         .expect("redirect response")
 }
 
+/// Halaman yang hanya boleh diakses setelah login.
+pub fn require_auth(ctx: &SessionCtx) -> Option<Response> {
+    if ctx.status != "authenticated" {
+        Some(redirect(format!("/session_{}/login", ctx.id)))
+    } else {
+        None
+    }
+}
+
 /// Middleware inti: memecah URL `/session_{sid}/...`, memvalidasi session,
 /// lalu menulis-ulang path internal menjadi `/app/...` agar bisa dirutekan Axum.
 pub async fn session_resolver(

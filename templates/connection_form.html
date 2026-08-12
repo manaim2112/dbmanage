@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{% if is_edit %}Edit Koneksi{% else %}Tambah Koneksi{% endif %} — DBManage{% endblock %}
+{% block content %}
+<main class="auth">
+  <div class="auth-card wide">
+    <div class="brand">&#9672; DBManage</div>
+    <p class="muted">{% if is_edit %}Edit koneksi database{% else %}Tambah koneksi database jarak jauh{% endif %}</p>
+    {% if !error.is_empty() %}<div class="alert">{{ error }}</div>{% endif %}
+    <form method="post" action="..">
+      <label for="nm">Nama koneksi</label>
+      <input id="nm" name="name" value="{{ name }}" required maxlength="64" autofocus>
+      <label for="tp">Tipe database</label>
+      <select id="tp" name="db_type">
+        <option value="mariadb" {% if db_type == "mariadb" %}selected{% endif %}>MariaDB / MySQL</option>
+        <option value="postgresql" {% if db_type == "postgresql" %}selected{% endif %}>PostgreSQL</option>
+      </select>
+      <label for="hs">Host</label>
+      <input id="hs" name="host" value="{{ host }}" required placeholder="db.example.com atau 10.0.0.5">
+      <label for="pt">Port</label>
+      <input id="pt" name="port" value="{{ port }}" required inputmode="numeric">
+      <label for="us">Username</label>
+      <input id="us" name="username" value="{{ username }}" required autocomplete="off">
+      <label for="pw">Password{% if is_edit %} <span class="small muted">(kosongkan jika tidak diubah)</span>{% endif %}</label>
+      <input id="pw" type="password" name="password" {% if !is_edit %}required{% endif %} autocomplete="new-password">
+      <button type="submit" class="btn-primary">{% if is_edit %}Simpan Perubahan{% else %}Tambah Koneksi{% endif %}</button>
+    </form>
+    <p class="small muted back-link"><a href="{{ back }}">&larr; Kembali ke daftar koneksi</a></p>
+  </div>
+</main>
+<script>
+document.querySelector('select[name=db_type]').addEventListener('change', function (e) {
+  var p = document.querySelector('input[name=port]');
+  p.value = e.target.value === 'postgresql' ? '5432' : '3306';
+});
+</script>
+{% endblock %}

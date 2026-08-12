@@ -1,8 +1,10 @@
 mod auth;
 mod config;
+mod connections;
 mod crypto;
 mod db;
 mod error;
+mod pools;
 mod session;
 mod state;
 mod templates;
@@ -22,7 +24,13 @@ async fn main() -> anyhow::Result<()> {
 
     let config = config::Config::from_env()?;
     let pool = db::init(&config).await?;
-    let state = state::AppState::new(pool, config.clone());
+    let cipher = std::sync::Arc::new(crypto::cipher_from_secret(&config.secret_key));
+    let state = state::AppState::new(
+        pool,
+        config.clone(),
+        pools::PoolManager::default(),
+        cipher,
+    );
 
     let app = Router::new()
         .route("/", get(auth::root))

@@ -5,7 +5,7 @@
   <div class="brand">&#9672; DBManage</div>
   <nav class="topnav">
     <a class="active" href="">Dashboard</a>
-    <a href="#" title="Hadir di Milestone 2">Connections</a>
+    <a href="connections">Connections</a>
     <a href="#" title="Hadir di Milestone 4">Backups</a>
   </nav>
   <form method="post" action="logout">
@@ -25,8 +25,8 @@
   </section>
   <section class="card">
     <h2>Koneksi Database</h2>
-    <p class="muted">Belum ada koneksi. Fitur tambah koneksi MariaDB &amp; PostgreSQL jarak jauh hadir di milestone berikutnya (M2).</p>
-    <button class="btn-primary btn-inline" disabled>+ Tambah Koneksi (segera)</button>
+    <p class="muted">{{ connections }} koneksi tersimpan. Kelola server MariaDB &amp; PostgreSQL jarak jauh, test koneksi, dan pantau statusnya.</p>
+    <a class="btn-primary btn-inline btn-link" href="connections">Kelola Koneksi</a>
   </section>
   <section class="card">
     <h2>Backup Otomatis</h2>

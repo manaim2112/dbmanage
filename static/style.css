@@ -189,3 +189,85 @@ a:hover { color: var(--accent-hover); }
   font-family: var(--mono);
 }
 .stat .stat-label { color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+/* ---------- Tables (M2) ---------- */
+.table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+.table th, .table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.table th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.table tbody tr:hover td { background: var(--panel-2); }
+.strong { font-weight: 600; }
+
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; }
+.dot.ok { background: var(--ok); box-shadow: 0 0 6px rgba(16, 185, 129, 0.7); }
+.dot.off { background: var(--err); }
+
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+.btn-mini {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12.5px;
+  font-family: var(--ui);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.btn-mini:hover { color: var(--text); border-color: var(--border-h); }
+.btn-mini.danger:hover { color: #fca5a5; border-color: rgba(239, 68, 68, 0.5); }
+
+.actions { display: flex; gap: 6px; align-items: center; }
+.actions form { margin: 0; display: inline; }
+
+.row-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+
+.flash-ok {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #6ee7b7;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+a.btn-primary { display: inline-block; text-align: center; }
+a.btn-primary.btn-link { text-decoration: none; }
+
+.back-link { margin-top: 16px; }
+
+.auth-card select {
+  width: 100%;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 15px;
+  font-family: var(--ui);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.auth-card select:focus { border-color: var(--accent); }

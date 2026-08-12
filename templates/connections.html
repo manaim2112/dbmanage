@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Koneksi — DBManage{% endblock %}
+{% block content %}
+<header class="topbar">
+  <div class="brand">&#9672; DBManage</div>
+  <nav class="topnav">
+    <a href="">Dashboard</a>
+    <a class="active" href="connections">Connections</a>
+    <a href="#" title="Hadir di Milestone 4">Backups</a>
+  </nav>
+  <form method="post" action="logout">
+    <button type="submit" class="btn-ghost">Logout</button>
+  </form>
+</header>
+<main class="page">
+  {% if let Some(m) = flash_ok %}<div class="flash-ok">{{ m }}</div>{% endif %}
+  {% if let Some(e) = flash_err %}<div class="alert">{{ e }}</div>{% endif %}
+  <section class="card">
+    <div class="row-between">
+      <h2>Koneksi Database</h2>
+      <a class="btn-primary btn-inline btn-link" href="connections/new">+ Tambah Koneksi</a>
+    </div>
+    {% if rows.is_empty() %}
+    <p class="muted">Belum ada koneksi. Tambahkan server MariaDB atau PostgreSQL pertama Anda.</p>
+    {% else %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Nama</th>
+          <th>Tipe</th>
+          <th>Host</th>
+          <th>User</th>
+          <th>Versi</th>
+          <th>Latensi</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in rows %}
+        <tr>
+          <td><span class="dot {% if c.online %}ok{% else %}off{% endif %}" title="{% if c.online %}online{% else %}offline{% endif %}"></span></td>
+          <td class="strong">{{ c.name }}</td>
+          <td><span class="badge">{{ c.db_type }}</span></td>
+          <td class="mono">{{ c.host }}:{{ c.port }}</td>
+          <td>{{ c.username }}</td>
+          <td class="muted">{% if c.online %}{{ c.version }}{% else %}&mdash;{% endif %}</td>
+          <td class="muted">{% if c.online %}{{ c.latency_ms }} ms{% else %}&mdash;{% endif %}</td>
+          <td>
+            <div class="actions">
+              <form method="post" action="connections/{{ c.id }}/test">
+                <button type="submit" class="btn-mini">Test</button>
+              </form>
+              <a class="btn-mini" href="connections/{{ c.id }}/edit">Edit</a>
+              <form method="post" action="connections/{{ c.id }}/delete" onsubmit="return confirm('Hapus koneksi ini?')">
+                <button type="submit" class="btn-mini danger">Hapus</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

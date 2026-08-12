@@ -34,3 +34,24 @@ pub struct Dashboard {
     pub backups: i64,
     pub session_short: String,
 }
+
+#[derive(Template)]
+#[template(path = "connections.html")]
+pub struct Connections {
+    pub rows: Vec<crate::connections::ConnRow>,
+    pub flash_ok: Option<String>,
+    pub flash_err: Option<String>,
+}
+
+#[derive(Template)]
+#[template(path = "connection_form.html")]
+pub struct ConnectionForm {
+    pub is_edit: bool,
+    pub error: String,
+    pub name: String,
+    pub db_type: String,
+    pub host: String,
+    pub port: String,
+    pub username: String,
+    pub back: String,
+}

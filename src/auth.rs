@@ -42,6 +42,7 @@ pub fn app_router(state: AppState) -> Router {
         .route("/logout", post(logout))
         .route("/setup", get(setup_page).post(setup_submit))
         .route("/totp-setup", get(totp_page).post(totp_submit))
+        .merge(crate::connections::router())
         .layer(middleware::from_fn(require_session))
         .with_state(state)
 }
