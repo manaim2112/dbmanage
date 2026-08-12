@@ -35,7 +35,7 @@ pub async fn root(State(state): State<AppState>) -> Result<Response, AppError> {
     Ok(redirect(format!("/session_{sid}/")))
 }
 
-pub fn app_router(state: AppState) -> Router {
+pub fn app_router() -> Router<AppState> {
     Router::new()
         .route("/", get(index))
         .route("/login", get(login_page).post(login_submit))
@@ -44,7 +44,6 @@ pub fn app_router(state: AppState) -> Router {
         .route("/totp-setup", get(totp_page).post(totp_submit))
         .merge(crate::connections::router())
         .layer(middleware::from_fn(require_session))
-        .with_state(state)
 }
 
 /// Route internal `/app/*` tidak boleh diakses langsung tanpa lewat `/session_*`.

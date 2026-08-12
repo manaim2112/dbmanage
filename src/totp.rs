@@ -9,7 +9,7 @@ pub const ISSUER: &str = "DBManage";
 pub fn generate_secret() -> String {
     let mut bytes = [0u8; 20];
     rand::thread_rng().fill_bytes(&mut bytes);
-    base32::encode(base32::Alphabet::RFC4648 { padding: false }, &bytes)
+    base32::encode(base32::Alphabet::Rfc4648 { padding: false }, &bytes)
 }
 
 pub fn otpauth_url(secret_b32: &str, username: &str) -> String {
@@ -24,11 +24,13 @@ pub fn otpauth_url(secret_b32: &str, username: &str) -> String {
 
 pub fn qr_svg(url: &str) -> String {
     let code = qrcode::QrCode::new(url.as_bytes().to_vec()).expect("data QR selalu valid");
-    code.to_svg_string(4)
+    code.render::<qrcode::render::svg::Color>()
+        .min_dimensions(200, 200)
+        .build()
 }
 
 pub fn verify(secret_b32: &str, code: &str) -> Result<bool> {
-    let secret = base32::decode(base32::Alphabet::RFC4648 { padding: false }, secret_b32)
+    let secret = base32::decode(base32::Alphabet::Rfc4648 { padding: false }, secret_b32)
         .ok_or_else(|| anyhow!("secret base32 tidak valid"))?;
     let totp = TOTP::new(Algorithm::SHA1, 6, 1, 30, secret)
         .map_err(|e| anyhow!("konfigurasi TOTP tidak valid: {e}"))?;

@@ -16,7 +16,9 @@ pub fn cipher_from_secret(secret: &str) -> Aes256Gcm {
 pub fn encrypt(cipher: &Aes256Gcm, plaintext: &str) -> Result<String> {
     let mut nonce_bytes = [0u8; 12];
     rand::thread_rng().fill_bytes(&mut nonce_bytes);
-    let ciphertext = cipher.encrypt(Nonce::from_slice(&nonce_bytes), plaintext.as_bytes())?;
+    let ciphertext = cipher
+        .encrypt(Nonce::from_slice(&nonce_bytes), plaintext.as_bytes())
+        .map_err(|e| anyhow::anyhow!("enkripsi gagal: {e:?}"))?;
     let mut out = nonce_bytes.to_vec();
     out.extend(ciphertext);
     Ok(hex::encode(out))
@@ -25,6 +27,8 @@ pub fn encrypt(cipher: &Aes256Gcm, plaintext: &str) -> Result<String> {
 pub fn decrypt(cipher: &Aes256Gcm, data_hex: &str) -> Result<String> {
     let data = hex::decode(data_hex)?;
     ensure!(data.len() > 12, "ciphertext terlalu pendek");
-    let plaintext = cipher.decrypt(Nonce::from_slice(&data[..12]), &data[12..])?;
+    let plaintext = cipher
+        .decrypt(Nonce::from_slice(&data[..12]), &data[12..])
+        .map_err(|e| anyhow::anyhow!("dekripsi gagal: {e:?}"))?;
     Ok(String::from_utf8(plaintext)?)
 }

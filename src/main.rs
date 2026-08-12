@@ -34,7 +34,7 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/", get(auth::root))
-        .nest("/app", auth::app_router(state.clone()))
+        .nest("/app", auth::app_router())
         .nest_service("/static", ServeDir::new("static"))
         .layer(axum::middleware::from_fn_with_state(
             state.clone(),

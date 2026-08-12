@@ -2,7 +2,7 @@
 
 use crate::crypto;
 use crate::error::AppError;
-use crate::pools::{self, PoolManager};
+use crate::pools;
 use crate::session::{self, redirect, require_auth};
 use crate::state::{AppState, SessionCtx};
 use crate::templates;
