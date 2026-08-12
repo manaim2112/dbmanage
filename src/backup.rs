@@ -223,10 +223,13 @@ async fn new_form(
     if let Some(r) = require_auth(&ctx) {
         return Ok(r);
     }
+    let connections = load_connections(&state).await?;
+    let conn_flags: Vec<bool> = connections.iter().map(|c| c.0 == 0).collect();
     let page = templates::BackupFormPage {
         is_edit: false,
         error: String::new(),
-        connections: load_connections(&state).await?,
+        connections,
+        conn_flags,
         conn_id: 0,
         database_name: String::new(),
         provider: "s3".to_string(),
@@ -436,11 +439,15 @@ async fn edit_form(
         gd = v;
     }
 
+    let connections = load_connections(&state).await?;
+    let conn_id: i64 = row.get("connection_id");
+    let conn_flags: Vec<bool> = connections.iter().map(|c| c.0 == conn_id).collect();
     let page = templates::BackupFormPage {
         is_edit: true,
         error: flash.err.unwrap_or_default(),
-        connections: load_connections(&state).await?,
-        conn_id: row.get("connection_id"),
+        connections,
+        conn_flags,
+        conn_id,
         database_name: row.get("database_name"),
         provider,
         endpoint: s3.endpoint,

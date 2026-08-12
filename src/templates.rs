@@ -154,6 +154,7 @@ pub struct BackupFormPage {
     pub is_edit: bool,
     pub error: String,
     pub connections: Vec<(i64, String)>,
+    pub conn_flags: Vec<bool>,
     pub conn_id: i64,
     pub database_name: String,
     pub provider: String,

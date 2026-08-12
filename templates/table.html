@@ -22,13 +22,13 @@
     <span class="strong mono">{{ tbl }}</span>
   </nav>
   <div class="tabs">
-    <a class="{% if tab == "struktur" %}active{% endif %}" href="?tab=struktur">Struktur</a>
-    <a class="{% if tab == "data" %}active{% endif %}" href="?tab=data">Data</a>
-    <a class="{% if tab == "relasi" %}active{% endif %}" href="?tab=relasi">Relasi</a>
-    <a class="{% if tab == "ddl" %}active{% endif %}" href="?tab=ddl">DDL</a>
+    <a class="{% if tab.as_str() == "struktur" %}active{% endif %}" href="?tab=struktur">Struktur</a>
+    <a class="{% if tab.as_str() == "data" %}active{% endif %}" href="?tab=data">Data</a>
+    <a class="{% if tab.as_str() == "relasi" %}active{% endif %}" href="?tab=relasi">Relasi</a>
+    <a class="{% if tab.as_str() == "ddl" %}active{% endif %}" href="?tab=ddl">DDL</a>
   </div>
 
-  {% if tab == "struktur" %}
+  {% if tab.as_str() == "struktur" %}
   <section class="card">
     <h2>Kolom ({{ columns.len() }})</h2>
     <div class="scroll-x">
@@ -74,7 +74,7 @@
   </section>
   {% endif %}
 
-  {% if tab == "data" %}
+  {% if tab.as_str() == "data" %}
   {% if let Some(g) = grid %}
   <section class="card">
     <div class="toolbar">
@@ -82,16 +82,16 @@
         <input type="hidden" name="tab" value="data">
         <select name="fcol">
           <option value="">— kolom —</option>
-          {% for c in g.cols %}<option value="{{ c }}" {% if g.filter_col.eq(c) %}selected{% endif %}>{{ c }}</option>{% endfor %}
+          {% for c in g.cols %}<option value="{{ c }}" {% if g.filter_flag[loop.index0] %}selected{% endif %}>{{ c }}</option>{% endfor %}
         </select>
         <select name="fop">
-          <option value="=" {% if g.filter_op == "=" %}selected{% endif %}>=</option>
-          <option value="!=" {% if g.filter_op == "!=" %}selected{% endif %}>!=</option>
-          <option value="LIKE" {% if g.filter_op == "LIKE" %}selected{% endif %}>LIKE</option>
-          <option value=">" {% if g.filter_op == ">" %}selected{% endif %}>&gt;</option>
-          <option value=">=" {% if g.filter_op == ">=" %}selected{% endif %}>&gt;=</option>
-          <option value="<" {% if g.filter_op == "<" %}selected{% endif %}>&lt;</option>
-          <option value="<=" {% if g.filter_op == "<=" %}selected{% endif %}>&lt;=</option>
+          <option value="=" {% if g.filter_op.as_str() == "=" %}selected{% endif %}>=</option>
+          <option value="!=" {% if g.filter_op.as_str() == "!=" %}selected{% endif %}>!=</option>
+          <option value="LIKE" {% if g.filter_op.as_str() == "LIKE" %}selected{% endif %}>LIKE</option>
+          <option value=">" {% if g.filter_op.as_str() == ">" %}selected{% endif %}>&gt;</option>
+          <option value=">=" {% if g.filter_op.as_str() == ">=" %}selected{% endif %}>&gt;=</option>
+          <option value="<" {% if g.filter_op.as_str() == "<" %}selected{% endif %}>&lt;</option>
+          <option value="<=" {% if g.filter_op.as_str() == "<=" %}selected{% endif %}>&lt;=</option>
         </select>
         <input type="text" name="fval" value="{{ g.filter_val }}" placeholder="nilai">
         <button type="submit" class="btn-mini">Filter</button>
@@ -107,8 +107,8 @@
         <tr>
           {% for c in g.cols %}
           <th class="cat-{{ g.categories[loop.index0] }}">
-            <a href="?tab=data{% if !g.filter_qs.is_empty() %}&amp;{{ g.filter_qs }}{% endif %}&amp;sort={{ c|urlencode }}&amp;dir={% if g.sort.eq(c) && g.dir == "asc" %}desc{% else %}asc{% endif %}">{{ c }}</a>
-            {% if g.sort.eq(c) %}<span class="sort-arrow">{% if g.dir == "asc" %}&uarr;{% else %}&darr;{% endif %}</span>{% endif %}
+            <a href="?tab=data{% if !g.filter_qs.is_empty() %}&amp;{{ g.filter_qs }}{% endif %}&amp;sort={{ c|urlencode }}&amp;dir={% if g.sort_flag[loop.index0] && g.dir_asc %}desc{% else %}asc{% endif %}">{{ c }}</a>
+            {% if g.sort_flag[loop.index0] %}<span class="sort-arrow">{% if g.dir_asc %}&uarr;{% else %}&darr;{% endif %}</span>{% endif %}
           </th>
           {% endfor %}
           {% if !g.pk_col.is_empty() %}<th>Aksi</th>{% endif %}
@@ -188,7 +188,7 @@
   {% endif %}
   {% endif %}
 
-  {% if tab == "relasi" %}
+  {% if tab.as_str() == "relasi" %}
   <section class="card">
     <h2>Foreign Key (keluar)</h2>
     {% if fks.is_empty() %}
@@ -234,7 +234,7 @@
   </section>
   {% endif %}
 
-  {% if tab == "ddl" %}
+  {% if tab.as_str() == "ddl" %}
   <section class="card">
     <h2>DDL — {{ tbl }}</h2>
     <pre class="code-block">{{ ddl }}</pre>
