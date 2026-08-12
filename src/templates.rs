@@ -70,7 +70,6 @@ pub struct Databases {
 #[template(path = "users.html")]
 pub struct Users {
     pub conn_name: String,
-    pub db_type: String,
     pub users: Vec<(String, String)>,
     pub dbs: Vec<String>,
     pub flash_ok: Option<String>,
@@ -99,7 +98,6 @@ pub struct TableDetail {
     pub fks: Vec<crate::metadata::FkInfo>,
     pub refs: Vec<crate::metadata::FkEdge>,
     pub ddl: String,
-    pub pk_single: String,
     pub grid: Option<crate::explorer::Grid>,
     pub flash_ok: Option<String>,
     pub flash_err: Option<String>,

@@ -302,7 +302,6 @@ async fn users_page(
     let dbs = metadata::list_databases(&dbr).await?;
     let page = templates::Users {
         conn_name: conn.name,
-        db_type: conn.db_type,
         users,
         dbs,
         flash_ok: flash.msg,
@@ -1021,7 +1020,6 @@ async fn table_detail(
         fks,
         refs,
         ddl,
-        pk_single: if pk.len() == 1 { pk[0].clone() } else { String::new() },
         grid,
         flash_ok: flash.msg,
         flash_err: flash.err,
