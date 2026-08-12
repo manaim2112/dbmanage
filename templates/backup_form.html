@@ -16,7 +16,7 @@
   <section class="card">
     <h2>{% if is_edit %}Edit Konfigurasi Backup{% else %}Konfigurasi Backup Baru{% endif %}</h2>
     {% if !error.is_empty() %}<div class="alert">{{ error }}</div>{% endif %}
-    <form method="post" action="{% if is_edit %}..{% else %}backups{% endif %}" class="form-grid">
+    <form method="post" action="{% if is_edit %}..{% else %}.{% endif %}" class="form-grid">
       <label>Koneksi
         <select name="connection_id" required>
           <option value="">— pilih koneksi —</option>
