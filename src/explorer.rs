@@ -591,7 +591,7 @@ async fn query_run(
             let (columns, data) = match &dbr {
                 DbRef::MySql(p, _) => {
                     let rows = sqlx::query(&sql).fetch_all(p).await?;
-                    let columns = rows
+                    let columns: Vec<String> = rows
                         .first()
                         .map(|r| r.columns().iter().map(|c| c.name().to_string()).collect())
                         .unwrap_or_default();
@@ -603,7 +603,7 @@ async fn query_run(
                 }
                 DbRef::Pg(p) => {
                     let rows = sqlx::query(&sql).fetch_all(p).await?;
-                    let columns = rows
+                    let columns: Vec<String> = rows
                         .first()
                         .map(|r| r.columns().iter().map(|c| c.name().to_string()).collect())
                         .unwrap_or_default();

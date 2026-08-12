@@ -792,16 +792,14 @@ async fn retention_s3(cfg: &S3Cfg, name_prefix: &str, cutoff: i64) -> Result<()>
         .prefix(format!("{}{}", cfg.prefix, name_prefix))
         .send()
         .await?;
-    if let Some(items) = resp.contents() {
-        for obj in items {
-            let Some(key) = obj.key() else { continue };
-            let age_ok = obj
-                .last_modified()
-                .map(|d| d.secs() < cutoff)
-                .unwrap_or(false);
-            if age_ok {
-                let _ = client.delete_object().bucket(&cfg.bucket).key(key).send().await;
-            }
+    for obj in resp.contents() {
+        let Some(key) = obj.key() else { continue };
+        let age_ok = obj
+            .last_modified()
+            .map(|d| d.secs() < cutoff)
+            .unwrap_or(false);
+        if age_ok {
+            let _ = client.delete_object().bucket(&cfg.bucket).key(key).send().await;
         }
     }
     Ok(())
@@ -941,7 +939,7 @@ pub fn spawn_scheduler(state: AppState) {
 async fn scheduler_tick(state: &AppState) -> Result<()> {
     let now = chrono::Local::now();
     let hhmm = now.format("%H:%M").to_string();
-    let dow = now.format("%a").to_lowercase();
+    let dow = now.format("%a").to_string().to_lowercase();
     let today = now.format("%Y-%m-%d").to_string();
 
     let rows = sqlx::query(

@@ -82,7 +82,7 @@
         <input type="hidden" name="tab" value="data">
         <select name="fcol">
           <option value="">— kolom —</option>
-          {% for c in g.cols %}<option value="{{ c }}" {% if g.filter_col == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+          {% for c in g.cols %}<option value="{{ c }}" {% if g.filter_col.eq(c) %}selected{% endif %}>{{ c }}</option>{% endfor %}
         </select>
         <select name="fop">
           <option value="=" {% if g.filter_op == "=" %}selected{% endif %}>=</option>
@@ -107,8 +107,8 @@
         <tr>
           {% for c in g.cols %}
           <th class="cat-{{ g.categories[loop.index0] }}">
-            <a href="?tab=data{% if !g.filter_qs.is_empty() %}&amp;{{ g.filter_qs }}{% endif %}&amp;sort={{ c|urlencode }}&amp;dir={% if g.sort == c && g.dir == "asc" %}desc{% else %}asc{% endif %}">{{ c }}</a>
-            {% if g.sort == c %}<span class="sort-arrow">{% if g.dir == "asc" %}&uarr;{% else %}&darr;{% endif %}</span>{% endif %}
+            <a href="?tab=data{% if !g.filter_qs.is_empty() %}&amp;{{ g.filter_qs }}{% endif %}&amp;sort={{ c|urlencode }}&amp;dir={% if g.sort.eq(c) && g.dir == "asc" %}desc{% else %}asc{% endif %}">{{ c }}</a>
+            {% if g.sort.eq(c) %}<span class="sort-arrow">{% if g.dir == "asc" %}&uarr;{% else %}&darr;{% endif %}</span>{% endif %}
           </th>
           {% endfor %}
           {% if !g.pk_col.is_empty() %}<th>Aksi</th>{% endif %}
@@ -133,7 +133,7 @@
         </tr>
         {% endif %}
         {% for row in g.rows %}
-        {% if !g.edit_pk.is_empty() && g.edit_pk == row.pk %}
+        {% if !g.edit_pk.is_empty() && g.edit_pk.eq(&row.pk) %}
         <tr class="edit-row">
           {% for cell in row.cells %}
           <td><input type="text" form="editrow" name="f:{{ g.cols[loop.index0] }}" value="{{ cell.v }}"></td>
