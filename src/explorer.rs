@@ -33,6 +33,10 @@ pub fn router() -> Router<AppState> {
         .route("/connections/{id}/databases/{db}/query", post(query_run))
         .route("/connections/{id}/databases/{db}/tables/{tbl}", get(table_detail))
         .route(
+            "/connections/{id}/databases/{db}/tables/{tbl}/export",
+            get(export_table),
+        )
+        .route(
             "/connections/{id}/databases/{db}/tables/{tbl}/rows",
             post(row_insert),
         )
@@ -98,7 +102,7 @@ async fn pool_for(state: &AppState, conn: &Conn) -> Result<PoolHandle, AppError>
 async fn dbr_for(state: &AppState, conn: &Conn, db: &str) -> Result<DbRef, AppError> {
     match conn.db_type.as_str() {
         "mariadb" => match pool_for(state, conn).await? {
-            PoolHandle::MySql(p) => Ok(DbRef::MySql(p, db.to_string())),
+            PoolHandle::MySql(p) => Ok(DbRef::MySql(p)),
             _ => Err(anyhow::anyhow!("tipe pool tidak cocok untuk koneksi ini").into()),
         },
         "postgresql" => {
@@ -191,12 +195,11 @@ async fn databases(
     };
     let handle = pool_for(&state, &conn).await?;
     let dbr = match &handle {
-        PoolHandle::MySql(p) => DbRef::MySql(p.clone(), String::new()),
+        PoolHandle::MySql(p) => DbRef::MySql(p.clone()),
         PoolHandle::Postgres(p) => DbRef::Pg(p.clone()),
     };
     let dbs = metadata::list_databases(&dbr).await?;
     let page = templates::Databases {
-        conn_id: conn.id,
         conn_name: conn.name,
         db_type: conn.db_type,
         dbs,
@@ -230,7 +233,7 @@ async fn create_database(
     }
     let handle = pool_for(&state, &conn).await?;
     let dbr = match &handle {
-        PoolHandle::MySql(p) => DbRef::MySql(p.clone(), String::new()),
+        PoolHandle::MySql(p) => DbRef::MySql(p.clone()),
         PoolHandle::Postgres(p) => DbRef::Pg(p.clone()),
     };
     match metadata::create_database(&dbr, &name).await {
@@ -259,7 +262,7 @@ async fn drop_database(
     }
     let handle = pool_for(&state, &conn).await?;
     let dbr = match &handle {
-        PoolHandle::MySql(p) => DbRef::MySql(p.clone(), String::new()),
+        PoolHandle::MySql(p) => DbRef::MySql(p.clone()),
         PoolHandle::Postgres(p) => DbRef::Pg(p.clone()),
     };
     match metadata::drop_database(&dbr, &db).await {
@@ -292,13 +295,12 @@ async fn users_page(
     };
     let handle = pool_for(&state, &conn).await?;
     let dbr = match &handle {
-        PoolHandle::MySql(p) => DbRef::MySql(p.clone(), String::new()),
+        PoolHandle::MySql(p) => DbRef::MySql(p.clone()),
         PoolHandle::Postgres(p) => DbRef::Pg(p.clone()),
     };
     let users = metadata::list_users(&dbr).await?;
     let dbs = metadata::list_databases(&dbr).await?;
     let page = templates::Users {
-        conn_id: conn.id,
         conn_name: conn.name,
         db_type: conn.db_type,
         users,
@@ -341,7 +343,7 @@ async fn create_user(
     };
     let handle = pool_for(&state, &conn).await?;
     let dbr = match &handle {
-        PoolHandle::MySql(p) => DbRef::MySql(p.clone(), String::new()),
+        PoolHandle::MySql(p) => DbRef::MySql(p.clone()),
         PoolHandle::Postgres(p) => DbRef::Pg(p.clone()),
     };
     match metadata::create_user(&dbr, &username, &password, &form.grant_db, &form.priv_level).await
@@ -388,7 +390,7 @@ async fn drop_user(
     };
     let handle = pool_for(&state, &conn).await?;
     let dbr = match &handle {
-        PoolHandle::MySql(p) => DbRef::MySql(p.clone(), String::new()),
+        PoolHandle::MySql(p) => DbRef::MySql(p.clone()),
         PoolHandle::Postgres(p) => DbRef::Pg(p.clone()),
     };
     match metadata::drop_user(&dbr, &form.username, &form.host).await {
@@ -442,7 +444,6 @@ async fn tables_page(
         })
         .collect();
     let page = templates::Tables {
-        conn_id: conn.id,
         conn_name: conn.name,
         db,
         tables: rows,
@@ -495,7 +496,6 @@ async fn erd(
     }
 
     let page = templates::Erd {
-        conn_id: conn.id,
         conn_name: conn.name,
         db,
         mermaid: m,
@@ -524,7 +524,6 @@ async fn query_page(
         return Ok(flash_to(&ctx, "/connections", None, Some("Koneksi tidak ditemukan")));
     };
     let page = templates::Query {
-        conn_id: conn.id,
         conn_name: conn.name,
         db,
         sql: String::new(),
@@ -544,7 +543,6 @@ fn render_query(
     error: &str,
 ) -> Result<Response, AppError> {
     let page = templates::Query {
-        conn_id: conn.id,
         conn_name: conn.name.clone(),
         db: db.to_string(),
         sql: sql.to_string(),
@@ -589,7 +587,7 @@ async fn query_run(
     if is_read {
         let fetched: Result<(Vec<String>, Vec<Vec<String>>), anyhow::Error> = async {
             let (columns, data) = match &dbr {
-                DbRef::MySql(p, _) => {
+                DbRef::MySql(p) => {
                     let rows = sqlx::query(&sql).fetch_all(p).await?;
                     let columns: Vec<String> = rows
                         .first()
@@ -738,6 +736,7 @@ pub struct TableQuery {
     pub dir: Option<String>,
     pub new: Option<String>,
     pub edit: Option<String>,
+    pub fmt: Option<String>,
 }
 
 pub struct CellVal {
@@ -755,17 +754,13 @@ pub struct Grid {
     pub categories: Vec<String>,
     pub rows: Vec<GridRow>,
     pub pk_col: String,
-    pub pk_index: i64,
     pub page: i64,
     pub pages: i64,
     pub total: i64,
     pub filter_qs: String,
     pub sort_qs: String,
-    pub filter_col: String,
     pub filter_op: String,
     pub filter_val: String,
-    pub sort: String,
-    pub dir: String,
     pub new_row: bool,
     pub edit_pk: String,
     pub heads: Vec<ColHead>,
@@ -845,6 +840,37 @@ fn grid_cell_pg(row: &sqlx::postgres::PgRow, i: usize) -> CellVal {
     }
 }
 
+fn where_order_sql(
+    dialect: &str,
+    columns: &[ColumnInfo],
+    fcol: &str,
+    fop: &str,
+    fval: &str,
+    sort: &str,
+    dir: &str,
+) -> (String, String) {
+    let names: Vec<&str> = columns.iter().map(|c| c.name.as_str()).collect();
+    let op_ok = matches!(fop, "=" | "!=" | "LIKE" | ">" | ">=" | "<" | "<=");
+    let mut where_sql = String::new();
+    if !fval.is_empty() && names.contains(&fcol) && op_ok {
+        let col = columns.iter().find(|c| c.name == fcol).unwrap();
+        let expr = metadata::qi(dialect, &col.name);
+        let val = if fop == "LIKE" {
+            format!("%{fval}%")
+        } else {
+            fval.to_string()
+        };
+        where_sql = format!(" WHERE {expr} {fop} {}", metadata::lit(dialect, &val));
+    }
+
+    let mut order_sql = String::new();
+    if !sort.is_empty() && names.contains(&sort) {
+        let d = if dir == "desc" { "DESC" } else { "ASC" };
+        order_sql = format!(" ORDER BY {} {d}", metadata::qi(dialect, sort));
+    }
+    (where_sql, order_sql)
+}
+
 async fn build_grid(
     dbr: &DbRef,
     tbl: &str,
@@ -853,7 +879,6 @@ async fn build_grid(
     q: &TableQuery,
 ) -> Result<Grid, AppError> {
     let dialect = dbr.dialect();
-    let names: Vec<&str> = columns.iter().map(|c| c.name.as_str()).collect();
 
     let fcol = q.fcol.clone().unwrap_or_default();
     let fop = q.fop.clone().unwrap_or_else(|| "=".to_string());
@@ -862,29 +887,12 @@ async fn build_grid(
     let dir = if q.dir.as_deref() == Some("desc") { "desc" } else { "asc" };
     let page = q.page.unwrap_or(0).max(0);
 
-    let op_ok = matches!(fop.as_str(), "=" | "!=" | "LIKE" | ">" | ">=" | "<" | "<=");
-    let mut where_sql = String::new();
-    if !fval.is_empty() && names.contains(&fcol.as_str()) && op_ok {
-        let col = columns.iter().find(|c| c.name == fcol).unwrap();
-        let expr = metadata::qi(dialect, &col.name);
-        let val = if fop == "LIKE" {
-            format!("%{fval}%")
-        } else {
-            fval.clone()
-        };
-        where_sql = format!(" WHERE {expr} {fop} {}", metadata::lit(dialect, &val));
-    }
-
-    let mut order_sql = String::new();
-    if !sort.is_empty() && names.contains(&sort.as_str()) {
-        let d = if dir == "desc" { "DESC" } else { "ASC" };
-        order_sql = format!(" ORDER BY {} {d}", metadata::qi(dialect, &sort));
-    }
+    let (where_sql, order_sql) = where_order_sql(dialect, columns, &fcol, &fop, &fval, &sort, dir);
 
     let tbl_q = metadata::qi(dialect, tbl);
     let count_sql = format!("SELECT COUNT(*) AS c FROM {tbl_q}{where_sql}");
     let total: i64 = match dbr {
-        DbRef::MySql(p, _) => sqlx::query(&count_sql).fetch_one(p).await?.get("c"),
+        DbRef::MySql(p) => sqlx::query(&count_sql).fetch_one(p).await?.get("c"),
         DbRef::Pg(p) => sqlx::query(&count_sql).fetch_one(p).await?.get("c"),
     };
     let pages = (total + PAGE_SIZE - 1) / PAGE_SIZE;
@@ -905,7 +913,7 @@ async fn build_grid(
 
     let mut grid_rows = Vec::new();
     match dbr {
-        DbRef::MySql(p, _) => {
+        DbRef::MySql(p) => {
             let rows = sqlx::query(&data_sql).fetch_all(p).await?;
             for r in rows {
                 let cells: Vec<CellVal> = (0..columns.len()).map(|i| grid_cell_mysql(&r, i)).collect();
@@ -950,17 +958,13 @@ async fn build_grid(
         categories: columns.iter().map(|c| c.category.clone()).collect(),
         rows: grid_rows,
         pk_col,
-        pk_index,
         page,
         pages,
         total,
         filter_qs: fq.join("&"),
         sort_qs: sq.join("&"),
-        filter_col: fcol,
         filter_op: fop,
         filter_val: fval,
-        sort,
-        dir: dir.to_string(),
         new_row: q.new.as_deref() == Some("1"),
         edit_pk: q.edit.clone().unwrap_or_default(),
     })
@@ -1008,7 +1012,6 @@ async fn table_detail(
     }
 
     let page = templates::TableDetail {
-        conn_id: conn.id,
         conn_name: conn.name,
         db,
         tbl,
@@ -1024,6 +1027,131 @@ async fn table_detail(
         flash_err: flash.err,
     };
     Ok(Html(templates::render(&page)?).into_response())
+}
+
+// -------------------------------------------------------------- export
+
+const EXPORT_LIMIT: i64 = 10_000;
+
+fn csv_field(s: &str) -> String {
+    if s.contains(',') || s.contains('"') || s.contains('\n') || s.contains('\r') {
+        format!("\"{}\"", s.replace('"', "\"\""))
+    } else {
+        s.to_string()
+    }
+}
+
+async fn export_table(
+    State(state): State<AppState>,
+    Extension(ctx): Extension<SessionCtx>,
+    Path((id, db, tbl)): Path<(i64, String, String)>,
+    Query(q): Query<TableQuery>,
+) -> Result<Response, AppError> {
+    if let Some(r) = require_auth(&ctx) {
+        return Ok(r);
+    }
+    let Some(conn) = load_conn(&state, id).await? else {
+        return Ok(flash_to(&ctx, "/connections", None, Some("Koneksi tidak ditemukan")));
+    };
+    let fmt = q.fmt.clone().unwrap_or_else(|| "csv".to_string());
+    if fmt != "csv" && fmt != "json" {
+        return Err(anyhow::anyhow!("Format export harus csv atau json").into());
+    }
+
+    let dbr = dbr_for(&state, &conn, &db).await?;
+    let columns = metadata::get_columns(&dbr, &db, &tbl).await?;
+    let dialect = dbr.dialect();
+
+    let fcol = q.fcol.clone().unwrap_or_default();
+    let fop = q.fop.clone().unwrap_or_else(|| "=".to_string());
+    let fval = q.fval.clone().unwrap_or_default();
+    let sort = q.sort.clone().unwrap_or_default();
+    let dir = if q.dir.as_deref() == Some("desc") { "desc" } else { "asc" };
+    let (where_sql, order_sql) = where_order_sql(dialect, &columns, &fcol, &fop, &fval, &sort, dir);
+
+    let sel: Vec<String> = columns.iter().map(|c| cast_expr(dialect, c)).collect();
+    let tbl_q = metadata::qi(dialect, &tbl);
+    let sql = format!(
+        "SELECT {} FROM {tbl_q}{where_sql}{order_sql} LIMIT {EXPORT_LIMIT}",
+        sel.join(", ")
+    );
+
+    let mut rows_out: Vec<Vec<CellVal>> = Vec::new();
+    match &dbr {
+        DbRef::MySql(p) => {
+            let rows = sqlx::query(&sql).fetch_all(p).await?;
+            for r in rows {
+                rows_out.push((0..columns.len()).map(|i| grid_cell_mysql(&r, i)).collect());
+            }
+        }
+        DbRef::Pg(p) => {
+            let rows = sqlx::query(&sql).fetch_all(p).await?;
+            for r in rows {
+                rows_out.push((0..columns.len()).map(|i| grid_cell_pg(&r, i)).collect());
+            }
+        }
+    }
+
+    let safe = |s: &str| {
+        s.chars()
+            .filter(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '-' | '_'))
+            .collect::<String>()
+    };
+    let fname = format!("{}.{}", safe(&db), safe(&tbl));
+
+    let (ctype, body) = if fmt == "csv" {
+        let mut sb = String::new();
+        sb.push_str(
+            &columns
+                .iter()
+                .map(|c| csv_field(&c.name))
+                .collect::<Vec<_>>()
+                .join(","),
+        );
+        sb.push_str("\r\n");
+        for row in &rows_out {
+            sb.push_str(&row.iter().map(|cell| csv_field(&cell.v)).collect::<Vec<_>>().join(","));
+            sb.push_str("\r\n");
+        }
+        ("text/csv; charset=utf-8", sb)
+    } else {
+        let mut arr: Vec<serde_json::Value> = Vec::new();
+        for row in &rows_out {
+            let mut m = serde_json::Map::new();
+            for (i, cell) in row.iter().enumerate() {
+                let v = if cell.null {
+                    serde_json::Value::Null
+                } else {
+                    serde_json::Value::String(cell.v.clone())
+                };
+                m.insert(columns[i].name.clone(), v);
+            }
+            arr.push(serde_json::Value::Object(m));
+        }
+        (
+            "application/json",
+            serde_json::to_string_pretty(&arr).unwrap_or_default(),
+        )
+    };
+
+    audit(
+        &state,
+        Some(id),
+        &format!("export_{fmt}"),
+        &format!("export {fmt}: {db}.{tbl} ({} baris)", rows_out.len()),
+    )
+    .await?;
+
+    let resp = Response::builder()
+        .status(200)
+        .header(axum::http::header::CONTENT_TYPE, ctype)
+        .header(
+            axum::http::header::CONTENT_DISPOSITION,
+            format!("attachment; filename=\"{fname}.{fmt}\""),
+        )
+        .body(axum::body::Body::from(body))
+        .map_err(|e| anyhow::anyhow!(e.to_string()))?;
+    Ok(resp)
 }
 
 // ------------------------------------------------------------- CRUD baris

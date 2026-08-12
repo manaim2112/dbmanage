@@ -59,7 +59,6 @@ pub struct ConnectionForm {
 #[derive(Template)]
 #[template(path = "databases.html")]
 pub struct Databases {
-    pub conn_id: i64,
     pub conn_name: String,
     pub db_type: String,
     pub dbs: Vec<String>,
@@ -70,7 +69,6 @@ pub struct Databases {
 #[derive(Template)]
 #[template(path = "users.html")]
 pub struct Users {
-    pub conn_id: i64,
     pub conn_name: String,
     pub db_type: String,
     pub users: Vec<(String, String)>,
@@ -82,7 +80,6 @@ pub struct Users {
 #[derive(Template)]
 #[template(path = "tables.html")]
 pub struct Tables {
-    pub conn_id: i64,
     pub conn_name: String,
     pub db: String,
     pub tables: Vec<crate::explorer::TableDisplay>,
@@ -93,7 +90,6 @@ pub struct Tables {
 #[derive(Template)]
 #[template(path = "table.html")]
 pub struct TableDetail {
-    pub conn_id: i64,
     pub conn_name: String,
     pub db: String,
     pub tbl: String,
@@ -112,7 +108,6 @@ pub struct TableDetail {
 #[derive(Template)]
 #[template(path = "erd.html")]
 pub struct Erd {
-    pub conn_id: i64,
     pub conn_name: String,
     pub db: String,
     pub mermaid: String,
@@ -122,7 +117,6 @@ pub struct Erd {
 #[derive(Template)]
 #[template(path = "query.html")]
 pub struct Query {
-    pub conn_id: i64,
     pub conn_name: String,
     pub db: String,
     pub sql: String,
@@ -154,7 +148,6 @@ pub struct BackupFormPage {
     pub is_edit: bool,
     pub error: String,
     pub connections: Vec<(i64, String, bool)>,
-    pub conn_id: i64,
     pub database_name: String,
     pub provider: String,
     pub endpoint: String,

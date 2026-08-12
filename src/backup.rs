@@ -234,7 +234,6 @@ async fn new_form(
         is_edit: false,
         error: String::new(),
         connections,
-        conn_id: 0,
         database_name: String::new(),
         provider: "s3".to_string(),
         endpoint: String::new(),
@@ -449,7 +448,6 @@ async fn edit_form(
         is_edit: true,
         error: flash.err.unwrap_or_default(),
         connections,
-        conn_id,
         database_name: row.get("database_name"),
         provider,
         endpoint: s3.endpoint,
@@ -561,7 +559,6 @@ async fn run_now(
 // ----------------------------------------------------------- engine dump
 
 struct BackupTarget {
-    config_id: i64,
     provider: String,
     database_name: String,
     retention_days: i64,
@@ -587,7 +584,6 @@ async fn load_target(state: &AppState, config_id: i64) -> Result<BackupTarget> {
         bail!("konfigurasi backup tidak ditemukan");
     };
     Ok(BackupTarget {
-        config_id,
         provider: r.get("provider"),
         database_name: r.get("database_name"),
         retention_days: r.get("retention_days"),

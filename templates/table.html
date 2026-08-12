@@ -100,6 +100,8 @@
       <span class="spacer"></span>
       <span class="muted small">{{ g.total }} baris</span>
       <a class="btn-mini" href="?tab=data&amp;new=1">+ Tambah Baris</a>
+      <a class="btn-mini" href="{{ tbl|urlencode }}/export?fmt=csv{% if !g.filter_qs.is_empty() %}&amp;{{ g.filter_qs }}{% endif %}{% if !g.sort_qs.is_empty() %}&amp;{{ g.sort_qs }}{% endif %}">Export CSV</a>
+      <a class="btn-mini" href="{{ tbl|urlencode }}/export?fmt=json{% if !g.filter_qs.is_empty() %}&amp;{{ g.filter_qs }}{% endif %}{% if !g.sort_qs.is_empty() %}&amp;{{ g.sort_qs }}{% endif %}">Export JSON</a>
     </div>
     <div class="scroll-x">
     <table class="table grid">

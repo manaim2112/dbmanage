@@ -7,11 +7,11 @@ use sqlx::mysql::MySqlPool;
 use sqlx::postgres::PgPool;
 use sqlx::Row;
 
-/// Target eksekusi: pool MySQL + nama database, atau pool Pg yang sudah
-/// terikat ke satu database (PostgreSQL tidak bisa lintas-database per query).
+/// Target eksekusi: pool MySQL, atau pool Pg yang sudah terikat ke satu
+/// database (PostgreSQL tidak bisa lintas-database per query).
 #[derive(Clone)]
 pub enum DbRef {
-    MySql(MySqlPool, String),
+    MySql(MySqlPool),
     Pg(PgPool),
 }
 
@@ -73,7 +73,7 @@ impl DbRef {
 
     pub async fn execute(&self, sql: &str) -> Result<u64> {
         let n = match self {
-            DbRef::MySql(p, _) => sqlx::query(sql).execute(p).await?.rows_affected(),
+            DbRef::MySql(p) => sqlx::query(sql).execute(p).await?.rows_affected(),
             DbRef::Pg(p) => sqlx::query(sql).execute(p).await?.rows_affected(),
         };
         Ok(n)
@@ -134,7 +134,7 @@ pub fn type_category(t: &str) -> &'static str {
 pub async fn list_databases(dbr: &DbRef) -> Result<Vec<String>> {
     let mut out = Vec::new();
     match dbr {
-        DbRef::MySql(p, _) => {
+        DbRef::MySql(p) => {
             let rows = sqlx::query("SELECT SCHEMA_NAME FROM information_schema.SCHEMATA ORDER BY SCHEMA_NAME")
                 .fetch_all(p)
                 .await?;
@@ -185,7 +185,7 @@ pub async fn drop_database(dbr: &DbRef, name: &str) -> Result<()> {
 pub async fn list_users(dbr: &DbRef) -> Result<Vec<(String, String)>> {
     let mut out = Vec::new();
     match dbr {
-        DbRef::MySql(p, _) => {
+        DbRef::MySql(p) => {
             let rows = sqlx::query("SELECT User, Host FROM mysql.user ORDER BY User, Host")
                 .fetch_all(p)
                 .await?;
@@ -276,7 +276,7 @@ pub async fn drop_user(dbr: &DbRef, username: &str, host: &str) -> Result<()> {
 pub async fn list_tables(dbr: &DbRef, db: &str) -> Result<Vec<TableInfo>> {
     let mut out = Vec::new();
     match dbr {
-        DbRef::MySql(p, _) => {
+        DbRef::MySql(p) => {
             let rows = sqlx::query(
                 "SELECT TABLE_NAME, ENGINE, TABLE_ROWS, DATA_LENGTH, INDEX_LENGTH, TABLE_COLLATION
                  FROM information_schema.TABLES
@@ -360,7 +360,7 @@ pub async fn list_tables(dbr: &DbRef, db: &str) -> Result<Vec<TableInfo>> {
 pub async fn get_columns(dbr: &DbRef, db: &str, tbl: &str) -> Result<Vec<ColumnInfo>> {
     let mut out = Vec::new();
     match dbr {
-        DbRef::MySql(p, _) => {
+        DbRef::MySql(p) => {
             let rows = sqlx::query(
                 "SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, COLUMN_DEFAULT, COLUMN_KEY, EXTRA, COLUMN_COMMENT
                  FROM information_schema.COLUMNS
@@ -436,7 +436,7 @@ pub async fn get_columns(dbr: &DbRef, db: &str, tbl: &str) -> Result<Vec<ColumnI
 pub async fn get_pk(dbr: &DbRef, db: &str, tbl: &str) -> Result<Vec<String>> {
     let mut out = Vec::new();
     match dbr {
-        DbRef::MySql(p, _) => {
+        DbRef::MySql(p) => {
             let rows = sqlx::query(
                 "SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE
                  WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND CONSTRAINT_NAME = 'PRIMARY'
@@ -473,7 +473,7 @@ pub async fn get_pk(dbr: &DbRef, db: &str, tbl: &str) -> Result<Vec<String>> {
 pub async fn get_indexes(dbr: &DbRef, db: &str, tbl: &str) -> Result<Vec<IndexInfo>> {
     let mut out = Vec::new();
     match dbr {
-        DbRef::MySql(p, _) => {
+        DbRef::MySql(p) => {
             let rows = sqlx::query(
                 "SELECT INDEX_NAME, NON_UNIQUE, INDEX_TYPE, COLUMN_NAME
                  FROM information_schema.STATISTICS
@@ -544,7 +544,7 @@ pub async fn get_indexes(dbr: &DbRef, db: &str, tbl: &str) -> Result<Vec<IndexIn
 pub async fn get_fks(dbr: &DbRef, db: &str, tbl: &str) -> Result<Vec<FkInfo>> {
     let mut out = Vec::new();
     match dbr {
-        DbRef::MySql(p, _) => {
+        DbRef::MySql(p) => {
             let rows = sqlx::query(
                 "SELECT kcu.CONSTRAINT_NAME, kcu.COLUMN_NAME, kcu.REFERENCED_TABLE_NAME,
                         kcu.REFERENCED_COLUMN_NAME, rc.DELETE_RULE, rc.UPDATE_RULE
@@ -607,7 +607,7 @@ pub async fn get_fks(dbr: &DbRef, db: &str, tbl: &str) -> Result<Vec<FkInfo>> {
 pub async fn get_fks_referencing(dbr: &DbRef, db: &str, tbl: &str) -> Result<Vec<FkEdge>> {
     let mut out = Vec::new();
     match dbr {
-        DbRef::MySql(p, _) => {
+        DbRef::MySql(p) => {
             let rows = sqlx::query(
                 "SELECT TABLE_NAME, COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE
                  WHERE REFERENCED_TABLE_SCHEMA = ? AND REFERENCED_TABLE_NAME = ?",
@@ -655,7 +655,7 @@ pub async fn get_fks_referencing(dbr: &DbRef, db: &str, tbl: &str) -> Result<Vec
 pub async fn all_fks(dbr: &DbRef, db: &str) -> Result<Vec<FkEdge>> {
     let mut out = Vec::new();
     match dbr {
-        DbRef::MySql(p, _) => {
+        DbRef::MySql(p) => {
             let rows = sqlx::query(
                 "SELECT TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
                  FROM information_schema.KEY_COLUMN_USAGE
@@ -703,7 +703,7 @@ pub async fn all_fks(dbr: &DbRef, db: &str) -> Result<Vec<FkEdge>> {
 pub async fn pk_map(dbr: &DbRef, db: &str) -> Result<std::collections::HashMap<String, Vec<String>>> {
     let mut out: std::collections::HashMap<String, Vec<String>> = std::collections::HashMap::new();
     match dbr {
-        DbRef::MySql(p, _) => {
+        DbRef::MySql(p) => {
             let rows = sqlx::query(
                 "SELECT TABLE_NAME, COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE
                  WHERE TABLE_SCHEMA = ? AND CONSTRAINT_NAME = 'PRIMARY'
@@ -742,7 +742,7 @@ pub async fn pk_map(dbr: &DbRef, db: &str) -> Result<std::collections::HashMap<S
 
 pub async fn get_ddl(dbr: &DbRef, _db: &str, tbl: &str) -> Result<String> {
     match dbr {
-        DbRef::MySql(p, _) => {
+        DbRef::MySql(p) => {
             let sql = format!("SHOW CREATE TABLE {}", qi("mariadb", tbl));
             let row = sqlx::query(&sql).fetch_one(p).await?;
             Ok(row.get::<String, _>(1))
