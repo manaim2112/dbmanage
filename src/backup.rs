@@ -209,11 +209,17 @@ pub struct BackupForm {
     pub enabled: Option<String>,
 }
 
-async fn load_connections(state: &AppState) -> Result<Vec<(i64, String)>, AppError> {
+async fn load_connections(state: &AppState, selected: i64) -> Result<Vec<(i64, String, bool)>, AppError> {
     let rows = sqlx::query("SELECT id, name FROM connections ORDER BY name COLLATE NOCASE")
         .fetch_all(&state.db)
         .await?;
-    Ok(rows.into_iter().map(|r| (r.get("id"), r.get("name"))).collect())
+    Ok(rows
+        .into_iter()
+        .map(|r| {
+            let id: i64 = r.get("id");
+            (id, r.get("name"), id == selected)
+        })
+        .collect())
 }
 
 async fn new_form(
@@ -223,13 +229,11 @@ async fn new_form(
     if let Some(r) = require_auth(&ctx) {
         return Ok(r);
     }
-    let connections = load_connections(&state).await?;
-    let conn_flags: Vec<bool> = connections.iter().map(|c| c.0 == 0).collect();
+    let connections = load_connections(&state, 0).await?;
     let page = templates::BackupFormPage {
         is_edit: false,
         error: String::new(),
         connections,
-        conn_flags,
         conn_id: 0,
         database_name: String::new(),
         provider: "s3".to_string(),
@@ -439,14 +443,12 @@ async fn edit_form(
         gd = v;
     }
 
-    let connections = load_connections(&state).await?;
     let conn_id: i64 = row.get("connection_id");
-    let conn_flags: Vec<bool> = connections.iter().map(|c| c.0 == conn_id).collect();
+    let connections = load_connections(&state, conn_id).await?;
     let page = templates::BackupFormPage {
         is_edit: true,
         error: flash.err.unwrap_or_default(),
         connections,
-        conn_flags,
         conn_id,
         database_name: row.get("database_name"),
         provider,

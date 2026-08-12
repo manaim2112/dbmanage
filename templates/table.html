@@ -82,7 +82,7 @@
         <input type="hidden" name="tab" value="data">
         <select name="fcol">
           <option value="">— kolom —</option>
-          {% for c in g.cols %}<option value="{{ c }}" {% if g.filter_flag[loop.index0] %}selected{% endif %}>{{ c }}</option>{% endfor %}
+          {% for h in g.heads %}<option value="{{ h.name }}" {% if h.filter_selected %}selected{% endif %}>{{ h.name }}</option>{% endfor %}
         </select>
         <select name="fop">
           <option value="=" {% if g.filter_op.as_str() == "=" %}selected{% endif %}>=</option>
@@ -105,10 +105,10 @@
     <table class="table grid">
       <thead>
         <tr>
-          {% for c in g.cols %}
-          <th class="cat-{{ g.categories[loop.index0] }}">
-            <a href="?tab=data{% if !g.filter_qs.is_empty() %}&amp;{{ g.filter_qs }}{% endif %}&amp;sort={{ c|urlencode }}&amp;dir={% if g.sort_flag[loop.index0] && g.dir_asc %}desc{% else %}asc{% endif %}">{{ c }}</a>
-            {% if g.sort_flag[loop.index0] %}<span class="sort-arrow">{% if g.dir_asc %}&uarr;{% else %}&darr;{% endif %}</span>{% endif %}
+          {% for h in g.heads %}
+          <th class="cat-{{ h.category }}">
+            <a href="?tab=data{% if !g.filter_qs.is_empty() %}&amp;{{ g.filter_qs }}{% endif %}&amp;sort={{ h.name|urlencode }}&amp;dir={% if h.sorted && g.dir_asc %}desc{% else %}asc{% endif %}">{{ h.name }}</a>
+            {% if h.sorted %}<span class="sort-arrow">{% if g.dir_asc %}&uarr;{% else %}&darr;{% endif %}</span>{% endif %}
           </th>
           {% endfor %}
           {% if !g.pk_col.is_empty() %}<th>Aksi</th>{% endif %}

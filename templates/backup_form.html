@@ -20,7 +20,7 @@
       <label>Koneksi
         <select name="connection_id" required>
           <option value="">— pilih koneksi —</option>
-          {% for c in connections %}<option value="{{ c.0 }}" {% if conn_flags[loop.index0] %}selected{% endif %}>{{ c.1 }}</option>{% endfor %}
+          {% for c in connections %}<option value="{{ c.0 }}" {% if c.2 %}selected{% endif %}>{{ c.1 }}</option>{% endfor %}
         </select>
       </label>
       <label>Nama database

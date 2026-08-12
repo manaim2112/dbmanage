@@ -768,9 +768,15 @@ pub struct Grid {
     pub dir: String,
     pub new_row: bool,
     pub edit_pk: String,
-    pub sort_flag: Vec<bool>,
-    pub filter_flag: Vec<bool>,
+    pub heads: Vec<ColHead>,
     pub dir_asc: bool,
+}
+
+pub struct ColHead {
+    pub name: String,
+    pub category: String,
+    pub sorted: bool,
+    pub filter_selected: bool,
 }
 
 impl Grid {
@@ -930,13 +936,14 @@ async fn build_grid(
     }
 
     Ok(Grid {
-        sort_flag: columns
+        heads: columns
             .iter()
-            .map(|c| !sort.is_empty() && c.name.as_str() == sort.as_str())
-            .collect(),
-        filter_flag: columns
-            .iter()
-            .map(|c| !fcol.is_empty() && c.name.as_str() == fcol.as_str())
+            .map(|c| ColHead {
+                sorted: !sort.is_empty() && c.name.as_str() == sort.as_str(),
+                filter_selected: !fcol.is_empty() && c.name.as_str() == fcol.as_str(),
+                category: c.category.clone(),
+                name: c.name.clone(),
+            })
             .collect(),
         dir_asc: dir == "asc",
         cols: columns.iter().map(|c| c.name.clone()).collect(),
